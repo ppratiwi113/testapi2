@@ -24,3 +24,8 @@ Route::get('/api/jumlah-dosen', 'Sdid\\API\\ApiController@getJumlahDosen');
 Route::get('/api/jumlah-tendik', 'Sdid\\API\\ApiController@getJumlahTendik');
 Route::get('/api/jabfungdosen', 'Sdid\\API\\ApiController@getJabfungDosen');
 Route::get('/api/japendosen', 'Sdid\\API\\ApiController@getJaPenDosen');
+Route::get('/api/japentendik', 'Sdid\\API\\ApiController@getJaPenTendik');
+Route::get('/api/jumserdosen', 'Sdid\\API\\ApiController@getJumSerDosen');
+Route::get('/api/jumserdosenlulus', 'Sdid\\API\\ApiController@getJumSerLulusTdkLulus');
+Route::get('/api/usiajekeldosen', 'Sdid\\API\\ApiController@getUsiaJekelDosen');
+Route::get('/api/ikatankerjadosen', 'Sdid\\API\\ApiController@getIkatanKerjaDosen');
