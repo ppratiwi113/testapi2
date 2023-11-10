@@ -47,5 +47,41 @@ class ApiController extends Controller
         return response()->json($result);
     }
 
+    public function getJaPenTendik()
+    {
+        $model = new ApiDashboard();
+        $result = $model->getJaPenTendik();
+       
+        return response()->json($result);
+    }
 
+    public function getJumSerDosen()
+    {
+        $model = new ApiDashboard();
+        $result = $model->getJumSerDosen();
+       
+        return response()->json($result);
+    }
+    public function getJumSerLulusTdkLulus()
+    {
+        $model = new ApiDashboard();
+        $result = $model->getJumSerLulusTdkLulus();
+       
+        return response()->json($result);
+    }
+
+    public function getUsiaJekelDosen()
+    {
+        $model = new ApiDashboard();
+        $result = $model->getUsiaJekelDosen();
+       
+        return response()->json($result);
+    }
+    public function getIkatanKerjaDosen()
+    {
+        $model = new ApiDashboard();
+        $result = $model->getIkatanKerjaDosen();
+       
+        return response()->json($result);
+    }
 }
