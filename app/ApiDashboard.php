@@ -327,32 +327,280 @@ class ApiDashboard extends Model
         return $data;
     }
 
-    // public function getJumGolonganDosen()
-    // {
-    //     $data = DB::select
-    //     ("
-        
-    //     ");
+    public function getJumGolonganDosen()
+    {
+        $data = DB::select
+        ("
+        SELECT
+            CASE
+                WHEN rpg.kode_gol IN ('I/a', 'I/b', 'I/c', 'I/d', 'II/a', 'II/b', 'II/c', 'II/d', 'III/a', 'III/b', 'III/c',
+                    'III/d', 'IV/a', 'IV/b', 'IV/c', 'IV/d', 'IV/e') THEN rpg.kode_gol
+                ELSE 'Tidak Ada Kepangkatan'
+            END AS golongan_kepangkatan,
+            COUNT(DISTINCT prp.id_sdm) AS jml_dosen,
+            MAX(ps.last_update) AS last_update
+        FROM
+            pdrd.reg_ptk AS prp
+        INNER JOIN
+            pdrd.keaktifan_ptk AS pkp ON prp.id_reg_ptk = pkp.id_reg_ptk
+        INNER JOIN
+            pdrd.sdm AS ps ON prp.id_sdm = ps.id_sdm
+        INNER JOIN
+            pdrd.rwy_pend_formal AS prpf ON prp.id_sdm = prpf.id_sdm
+        INNER JOIN
+            ref.pangkat_golongan AS rpg ON ps.id_pangkat_gol = rpg.id_pangkat_gol
+        WHERE
+            ps.id_jns_sdm = 12
+            AND ps.id_stat_aktif = 1
+            AND ps.soft_delete = 0
+            AND pkp.soft_delete = 0
+            AND prp.soft_delete = 0
+        GROUP BY
+            rpg.kode_gol
+        ORDER BY
+            rpg.kode_gol;
 
-    //     return $data;
-    // }
-    // public function getJumGolonganDosen()
-    // {
-    //     $data = DB::select
-    //     ("
-        
-    //     ");
+        ");
 
-    //     return $data;
-    // }
-    // public function getJumGolonganDosen()
-    // {
-    //     $data = DB::select
-    //     ("
-        
-    //     ");
+        return $data;
+    }
+    
+    public function getBentukPendDosen()
+    {
+        $data = DB::select
+        ("
+        SELECT rbp.nm_bp AS name, COUNT(DISTINCT tsdm.id_sdm) AS value
+        FROM pdrd.sdm tsdm
+        LEFT JOIN (
+            SELECT
+                treg.id_sdm,
+                treg.id_reg_ptk,
+                treg.id_sp,
+                treg.id_jns_keluar,
+                treg.id_sms,
+                ROW_NUMBER() OVER(PARTITION BY treg.id_sdm ORDER BY treg.last_update DESC) AS rn
+            FROM pdrd.reg_ptk treg
+        ) lreg ON tsdm.id_sdm = lreg.id_sdm AND lreg.rn = 1
+        LEFT JOIN pdrd.satuan_pendidikan tsp ON tsp.id_sp = lreg.id_sp
+        LEFT JOIN pdrd.keaktifan_ptk pkp ON pkp.id_reg_ptk = lreg.id_reg_ptk
+        LEFT JOIN ref.bentuk_pendidikan rbp ON tsp.id_bp = rbp.id_bp
+        LEFT JOIN pdrd.sms tsms ON tsms.id_sms = lreg.id_sms AND tsms.soft_delete = 0
+        WHERE pkp.id_thn_ajaran = 2023
+            AND tsdm.soft_delete = 0
+            AND tsdm.id_jns_sdm = 12
+            AND tsp.stat_sp = 'A'
+            AND tsms.id_jns_sms = 3
+            AND LEFT(tsp.id_wil, 2) <> '99'
+            AND tsdm.id_stat_aktif IN ('1', '20', '24', '25', '27')
+            AND lreg.id_jns_keluar IS NULL
+        GROUP BY rbp.nm_bp;
 
-    //     return $data;
-    // }
+        ");
+
+        return $data;
+    }
+
+    public function getBentukPendTendik()
+    {
+        $data = DB::select
+        ("
+        SELECT rbp.nm_bp AS 'name', COUNT(DISTINCT tsdm.id_sdm) AS 'value'
+        FROM pdrd.sdm AS tsdm WITH(NOLOCK)
+        LEFT JOIN (
+            SELECT
+                treg.id_sdm,
+                treg.id_reg_ptk,
+                treg.id_sp,
+                treg.id_jns_keluar,
+                treg.id_sms,
+                ROW_NUMBER() OVER(PARTITION BY treg.id_sdm ORDER BY treg.last_update DESC) AS rn
+            FROM pdrd.reg_ptk AS treg WITH(NOLOCK)
+        ) AS lreg ON tsdm.id_sdm = lreg.id_sdm AND lreg.rn = 1
+        LEFT JOIN pdrd.satuan_pendidikan AS tsp WITH(NOLOCK) ON tsp.id_sp = lreg.id_sp
+        LEFT JOIN pdrd.keaktifan_ptk AS pkp WITH(NOLOCK) ON pkp.id_reg_ptk = lreg.id_reg_ptk
+        LEFT JOIN ref.bentuk_pendidikan AS rbp WITH(NOLOCK) ON tsp.id_bp = rbp.id_bp
+        LEFT JOIN pdrd.sms tsms WITH (NOLOCK) ON tsms.id_sms = lreg.id_sms AND tsms.soft_delete = 0
+        WHERE pkp.id_thn_ajaran = 2023
+            AND tsdm.soft_delete = 0
+            AND tsdm.id_jns_sdm = 13
+            AND tsp.stat_sp = 'A'
+            AND LEFT(tsp.id_wil,2) <> '99'
+            AND tsdm.id_stat_aktif IN('1','20','24','25','27')
+            AND lreg.id_jns_keluar IS NULL
+        GROUP BY rbp.nm_bp;
+        ");
+
+        return $data;
+    }
+
+    public function getJumPangkatDosen()
+    {
+        $data = DB::select
+        ("
+        SELECT
+            CASE
+                WHEN rpg.nm_pangkat IN (
+                    'Juru Muda', 'Juru Muda Tk. I', 'Juru', 'Juru Tk. I', 'Pengatur Muda', 'Pengatur Muda Tk. I', 'Pengatur',
+                    'Pengatur Tk. I', 'Penata Muda', 'Penata Muda Tk. I', 'Penata', 'Penata Tk. I', 'Pembina', 'Pembina Tk. I',
+                    'Pembina Utama Muda', 'Pembina Utama Madya', 'Pembina Utama'
+                ) THEN rpg.nm_pangkat
+                ELSE 'Tidak Ada Kepangkatan'
+            END AS golongan_kepangkatan,
+            COUNT(DISTINCT prp.id_sdm) AS jml_dosen,
+            MAX(ps.last_update) AS last_update
+        FROM
+            pdrd.reg_ptk AS prp
+        INNER JOIN
+            pdrd.keaktifan_ptk AS pkp ON prp.id_reg_ptk = pkp.id_reg_ptk
+        INNER JOIN
+            pdrd.sdm AS ps ON prp.id_sdm = ps.id_sdm
+        INNER JOIN
+            pdrd.rwy_pend_formal AS prpf ON prp.id_sdm = prpf.id_sdm
+        INNER JOIN
+            ref.pangkat_golongan AS rpg ON ps.id_pangkat_gol = rpg.id_pangkat_gol
+        WHERE
+            ps.id_jns_sdm = 12
+            AND ps.id_stat_aktif = 1
+            AND ps.soft_delete = 0
+            AND pkp.soft_delete = 0
+            AND prp.soft_delete = 0
+        GROUP BY
+            rpg.nm_pangkat
+        ORDER BY
+            rpg.nm_pangkat;
+
+        ");
+
+        return $data;
+    }
+
+    public function getJenjPendDosen()
+    {
+        $data = DB::select
+        ("
+        SELECT
+            CASE
+                WHEN rjd.nm_jenj_didik IN (
+                    'D1', 'D2', 'D3', 'D4', 'Informal', 'Lainnya', 'Non formal', 'Profesi', 'S1',
+                    'S2', 'S2 Terapan', 'S3', 'S3 Terapan', 'SMA / sederajat', 'Sp-1', 'Sp-2'
+                ) THEN rjd.nm_jenj_didik
+                ELSE 'Tanpa Jenjang'
+            END AS jenjang_pendidikan,
+            COUNT(DISTINCT prp.id_sdm) AS jml_tendik,
+            MAX(ps.last_update) AS last_update
+        FROM
+            pdrd.reg_ptk AS prp
+        INNER JOIN
+            pdrd.keaktifan_ptk AS pkp ON prp.id_reg_ptk = pkp.id_reg_ptk
+        INNER JOIN
+            pdrd.sdm AS ps ON prp.id_sdm = ps.id_sdm
+        INNER JOIN
+            pdrd.rwy_pend_formal AS prpf ON prp.id_sdm = prpf.id_sdm
+        INNER JOIN
+            ref.jenjang_pendidikan AS rjd ON prpf.id_jenj_didik = rjd.id_jenj_didik
+        WHERE
+            ps.id_jns_sdm = 12
+            AND ps.id_stat_aktif = 1
+            AND ps.soft_delete = 0
+            AND pkp.soft_delete = 0
+            AND prp.soft_delete = 0
+        GROUP BY
+            rjd.nm_jenj_didik
+        ORDER BY
+            rjd.nm_jenj_didik;
+
+        ");
+
+        return $data;
+    }
+
+    public function getJumPangkatTendik()
+    {
+        $data = DB::select
+        ("
+        SELECT
+            CASE
+                WHEN rpg.nm_pangkat IN (
+                    'Juru Muda','Juru Muda Tk. I','Juru','Juru Tk. I','Pengatur Muda','Pengatur Muda Tk. I','Pengatur',
+                    'Pengatur Tk. I','Penata Muda','Penata Muda Tk. I','Penata','Penata Tk. I','Pembina','Pembina Tk. I',
+                    'Pembina Utama Muda','Pembina Utama Madya','Pembina Utama'
+                ) THEN rpg.nm_pangkat
+                ELSE 'Tidak Ada Kepangkatan'
+            END AS golongan_kepangkatan,
+            COUNT(DISTINCT prp.id_sdm) AS jml_tendik,
+            MAX(ps.last_update) AS last_update
+        FROM
+            pdrd.reg_ptk AS prp
+        INNER JOIN
+            pdrd.keaktifan_ptk AS pkp ON prp.id_reg_ptk = pkp.id_reg_ptk
+        INNER JOIN
+            pdrd.sdm AS ps ON prp.id_sdm = ps.id_sdm
+        INNER JOIN
+            pdrd.rwy_pend_formal AS prpf ON prp.id_sdm = prpf.id_sdm
+        INNER JOIN
+            ref.pangkat_golongan AS rpg ON ps.id_pangkat_gol = rpg.id_pangkat_gol
+        WHERE
+            ps.id_jns_sdm = 13
+            AND ps.id_stat_aktif = 1
+            AND ps.soft_delete = 0
+            AND pkp.soft_delete = 0
+            AND prp.soft_delete = 0
+        GROUP BY
+            rpg.nm_pangkat
+        ORDER BY
+            rpg.nm_pangkat;
+
+        ");
+
+        return $data;
+    }
+
+    public function getJumPangDosenperAhli()
+    {
+        $data = DB::select
+        ("
+        ");
+
+        return $data;
+    }
+
+    public function getJumPTAktifPerProv()
+    {
+        $data = DB::select
+        ("
+        ");
+
+        return $data;
+    }
+
+    public function getJumPTAktifperBentPend()
+    {
+        $data = DB::select
+        ("
+        ");
+
+        return $data;
+    }
+
+    public function getKoordinatPendTinggi()
+    {
+        $data = DB::select
+        ("
+        ");
+
+        return $data;
+    }
+
+
+    //Trend
+
+    public function getTrendJumDosen()
+    {
+        $data = DB::select
+        ("
+        ");
+
+        return $data;
+    }
     
 }

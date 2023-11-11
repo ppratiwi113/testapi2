@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Sdid\API;
+namespace App\Http\Controllers\API;
 
 use App\ApiDashboard;
 use Illuminate\Http\Request;
