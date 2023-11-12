@@ -321,7 +321,6 @@ class ApiDashboard extends Model
             AND tsdm.id_stat_aktif IN ('1', '20', '24', '25', '27')
             AND lreg.id_jns_keluar IS NULL
         GROUP BY rik.nm_ikatan_kerja;
-
         ");
 
         return $data;
@@ -404,8 +403,8 @@ class ApiDashboard extends Model
     {
         $data = DB::select
         ("
-        SELECT rbp.nm_bp AS 'name', COUNT(DISTINCT tsdm.id_sdm) AS 'value'
-        FROM pdrd.sdm AS tsdm WITH(NOLOCK)
+        SELECT rbp.nm_bp AS name, COUNT(DISTINCT tsdm.id_sdm) AS value
+        FROM pdrd.sdm tsdm
         LEFT JOIN (
             SELECT
                 treg.id_sdm,
@@ -414,19 +413,19 @@ class ApiDashboard extends Model
                 treg.id_jns_keluar,
                 treg.id_sms,
                 ROW_NUMBER() OVER(PARTITION BY treg.id_sdm ORDER BY treg.last_update DESC) AS rn
-            FROM pdrd.reg_ptk AS treg WITH(NOLOCK)
-        ) AS lreg ON tsdm.id_sdm = lreg.id_sdm AND lreg.rn = 1
-        LEFT JOIN pdrd.satuan_pendidikan AS tsp WITH(NOLOCK) ON tsp.id_sp = lreg.id_sp
-        LEFT JOIN pdrd.keaktifan_ptk AS pkp WITH(NOLOCK) ON pkp.id_reg_ptk = lreg.id_reg_ptk
-        LEFT JOIN ref.bentuk_pendidikan AS rbp WITH(NOLOCK) ON tsp.id_bp = rbp.id_bp
-        LEFT JOIN pdrd.sms tsms WITH (NOLOCK) ON tsms.id_sms = lreg.id_sms AND tsms.soft_delete = 0
+            FROM pdrd.reg_ptk treg
+        ) lreg ON tsdm.id_sdm = lreg.id_sdm AND lreg.rn = 1
+        LEFT JOIN pdrd.satuan_pendidikan tsp ON tsp.id_sp = lreg.id_sp
+        LEFT JOIN pdrd.keaktifan_ptk pkp ON pkp.id_reg_ptk = lreg.id_reg_ptk
+        LEFT JOIN ref.bentuk_pendidikan rbp ON tsp.id_bp = rbp.id_bp
+        LEFT JOIN pdrd.sms tsms ON tsms.id_sms = lreg.id_sms AND tsms.soft_delete = 0
         WHERE pkp.id_thn_ajaran = 2023
-            AND tsdm.soft_delete = 0
-            AND tsdm.id_jns_sdm = 13
-            AND tsp.stat_sp = 'A'
-            AND LEFT(tsp.id_wil,2) <> '99'
-            AND tsdm.id_stat_aktif IN('1','20','24','25','27')
-            AND lreg.id_jns_keluar IS NULL
+        AND tsdm.soft_delete = 0
+        AND tsdm.id_jns_sdm = 13
+        AND tsp.stat_sp = 'A'
+        AND LEFT(tsp.id_wil, 2) <> '99'
+        AND tsdm.id_stat_aktif IN ('1', '20', '24', '25', '27')
+        AND lreg.id_jns_keluar IS NULL
         GROUP BY rbp.nm_bp;
         ");
 
@@ -559,6 +558,62 @@ class ApiDashboard extends Model
     {
         $data = DB::select
         ("
+        SELECT
+            CASE
+                WHEN rpg.kode_gol IN ('IV/d', 'IV/e') THEN 'Ahli Utama'
+                WHEN rpg.kode_gol IN ('IV/a', 'IV/b', 'IV/c') THEN 'Ahli Madya'
+                WHEN rpg.kode_gol IN ('III/c', 'III/d') THEN 'Ahli Muda'
+                WHEN rpg.kode_gol IN ('III/a', 'III/b') THEN 'Ahli Pertama'
+                ELSE 'Tidak Ada Kepangkatan'
+            END AS kategori_kepangkatan,
+            CASE
+                WHEN rpg.kode_gol IN ('IV/d', 'IV/e') THEN 'Golongan IV/d - IV/e'
+                WHEN rpg.kode_gol IN ('IV/a', 'IV/b', 'IV/c') THEN 'Golongan IV/a - IV/c'
+                WHEN rpg.kode_gol IN ('III/c', 'III/d') THEN 'Golongan III/c - III/d'
+                WHEN rpg.kode_gol IN ('III/a', 'III/b') THEN 'Golongan III/a - III/b'
+                ELSE 'Tidak Ada Kepangkatan'
+            END AS detail_kepangkatan,
+            COUNT(DISTINCT prp.id_sdm) AS jml_dosen,
+            MAX(ps.last_update) AS last_update
+        FROM
+            pdrd.reg_ptk AS prp
+        INNER JOIN
+            pdrd.keaktifan_ptk AS pkp ON prp.id_reg_ptk = pkp.id_reg_ptk
+        INNER JOIN
+            pdrd.sdm AS ps ON prp.id_sdm = ps.id_sdm
+        INNER JOIN
+            pdrd.rwy_pend_formal AS prpf ON prp.id_sdm = prpf.id_sdm
+        INNER JOIN
+            ref.pangkat_golongan AS rpg ON ps.id_pangkat_gol = rpg.id_pangkat_gol
+        WHERE
+            ps.id_jns_sdm = 12
+            AND ps.id_stat_aktif = 1
+            AND ps.soft_delete = 0
+            AND pkp.soft_delete = 0
+            AND prp.soft_delete = 0
+        GROUP BY
+            CASE
+                WHEN rpg.kode_gol IN ('IV/d', 'IV/e') THEN 'Ahli Utama'
+                WHEN rpg.kode_gol IN ('IV/a', 'IV/b', 'IV/c') THEN 'Ahli Madya'
+                WHEN rpg.kode_gol IN ('III/c', 'III/d') THEN 'Ahli Muda'
+                WHEN rpg.kode_gol IN ('III/a', 'III/b') THEN 'Ahli Pertama'
+                ELSE 'Tidak Ada Kepangkatan'
+            END,
+            CASE
+                WHEN rpg.kode_gol IN ('IV/d', 'IV/e') THEN 'Golongan IV/d - IV/e'
+                WHEN rpg.kode_gol IN ('IV/a', 'IV/b', 'IV/c') THEN 'Golongan IV/a - IV/c'
+                WHEN rpg.kode_gol IN ('III/c', 'III/d') THEN 'Golongan III/c - III/d'
+                WHEN rpg.kode_gol IN ('III/a', 'III/b') THEN 'Golongan III/a - III/b'
+                ELSE 'Tidak Ada Kepangkatan'
+            END
+        ORDER BY
+            CASE
+                WHEN rpg.kode_gol IN ('IV/d', 'IV/e') THEN 'Ahli Utama'
+                WHEN rpg.kode_gol IN ('IV/a', 'IV/b', 'IV/c') THEN 'Ahli Madya'
+                WHEN rpg.kode_gol IN ('III/c', 'III/d') THEN 'Ahli Muda'
+                WHEN rpg.kode_gol IN ('III/a', 'III/b') THEN 'Ahli Pertama'
+                ELSE 'Tidak Ada Kepangkatan'
+            END;
         ");
 
         return $data;
@@ -568,6 +623,17 @@ class ApiDashboard extends Model
     {
         $data = DB::select
         ("
+        SELECT 
+            LEFT(psp.id_wil, 2) || '0000' AS kode_wilayah,
+            rw.nm_wil AS provinsi,
+            COUNT(psp.id_sp) AS satuan_pendidikan
+        FROM pdrd.satuan_pendidikan AS psp
+        LEFT JOIN ref.wilayah AS rw ON rw.id_wil = LEFT(psp.id_wil, 2) || '0000'
+        WHERE psp.stat_sp = 'A'
+            AND rw.id_level_wil = 1
+            AND psp.soft_delete = 0
+        GROUP BY LEFT(psp.id_wil, 2) || '0000', rw.nm_wil
+        ORDER BY kode_wilayah;
         ");
 
         return $data;
@@ -577,19 +643,28 @@ class ApiDashboard extends Model
     {
         $data = DB::select
         ("
+        SELECT
+            rbp.nm_bp AS bentuk_pendidikan,
+            COUNT(DISTINCT psp.id_sp) AS jml_pt
+        FROM pdrd.satuan_pendidikan AS psp
+        LEFT JOIN ref.bentuk_pendidikan AS rbp ON psp.id_bp = rbp.id_bp 
+        WHERE psp.stat_sp = 'A'
+            AND psp.soft_delete = 0
+        GROUP BY rbp.nm_bp
+        ORDER BY jml_pt DESC;
         ");
 
         return $data;
     }
 
-    public function getKoordinatPendTinggi()
-    {
-        $data = DB::select
-        ("
-        ");
+    // public function getKoordinatPendTinggi()
+    // {
+    //     $data = DB::select
+    //     ("
+    //     ");
 
-        return $data;
-    }
+    //     return $data;
+    // }
 
 
     //Trend
@@ -598,9 +673,181 @@ class ApiDashboard extends Model
     {
         $data = DB::select
         ("
+        SELECT
+            nm_thn_ajaran,
+            COUNT(DISTINCT tsdm.id_sdm) AS jml_dosen
+        FROM pdrd.sdm tsdm
+        LEFT JOIN pdrd.reg_ptk treg ON treg.id_sdm = tsdm.id_sdm AND treg.soft_delete = 0
+        LEFT JOIN pdrd.keaktifan_ptk tkeaktifan ON tkeaktifan.id_reg_ptk = treg.id_reg_ptk AND tkeaktifan.soft_delete = 0
+        LEFT JOIN pdrd.satuan_pendidikan tsp ON tsp.id_sp = treg.id_sp AND tsp.soft_delete = 0
+        LEFT JOIN pdrd.sms tsms ON tsms.id_sms = treg.id_sms AND tsms.soft_delete = 0
+        LEFT JOIN ref.tahun_ajaran rta ON tkeaktifan.id_thn_ajaran = rta.id_thn_ajaran
+        WHERE tkeaktifan.a_sp_homebase = 1
+            AND tsdm.soft_delete = 0
+            AND tsdm.id_jns_sdm = 12
+            AND tsp.stat_sp = 'A'
+            AND tsms.id_jns_sms = 3
+            AND LEFT(tsp.id_wil,2) <> '99'
+            AND tsdm.id_stat_aktif IN('1','20','24','25','27')
+            AND treg.id_jns_keluar IS NULL
+            AND tkeaktifan.id_thn_ajaran BETWEEN 2020 AND 2023
+        GROUP BY nm_thn_ajaran
+        ORDER BY nm_thn_ajaran;
         ");
 
         return $data;
     }
+
+    public function getTrendJumTendik()
+    {
+        $data = DB::select
+        ("
+        SELECT
+            nm_thn_ajaran,
+            COUNT(DISTINCT tsdm.id_sdm) AS jml_tendik
+        FROM pdrd.sdm tsdm
+        LEFT JOIN pdrd.reg_ptk treg ON treg.id_sdm = tsdm.id_sdm AND treg.soft_delete = 0
+        LEFT JOIN pdrd.keaktifan_ptk tkeaktifan ON tkeaktifan.id_reg_ptk = treg.id_reg_ptk AND tkeaktifan.soft_delete = 0
+        LEFT JOIN pdrd.satuan_pendidikan tsp ON tsp.id_sp = treg.id_sp AND tsp.soft_delete = 0
+        LEFT JOIN pdrd.sms tsms ON tsms.id_sms = treg.id_sms AND tsms.soft_delete = 0
+        LEFT JOIN ref.tahun_ajaran rta ON tkeaktifan.id_thn_ajaran = rta.id_thn_ajaran
+        WHERE tkeaktifan.a_sp_homebase = 1
+            AND tsdm.soft_delete = 0
+            AND tsdm.id_jns_sdm = 13
+            AND tsp.stat_sp = 'A'
+            AND tsms.id_jns_sms = 3
+            AND LEFT(tsp.id_wil,2) <> '99'
+            AND tsdm.id_stat_aktif IN('1','20','24','25','27')
+            AND treg.id_jns_keluar IS NULL
+            AND tkeaktifan.id_thn_ajaran BETWEEN 2020 AND 2023
+        GROUP BY nm_thn_ajaran
+        ORDER BY nm_thn_ajaran;
+        ");
+
+        return $data;
+    }
+
+    public function getTrendBentukPend()
+    {
+        $data = DB::select
+        ("
+        SELECT
+            rbp.nm_bp AS name,
+            pkp.id_thn_ajaran,
+            COUNT(DISTINCT tsdm.id_sdm) AS value
+        FROM pdrd.sdm tsdm
+        LEFT JOIN (
+            SELECT
+                treg.id_sdm,
+                treg.id_reg_ptk,
+                treg.id_sp,
+                treg.id_jns_keluar,
+                treg.id_sms,
+                ROW_NUMBER() OVER(PARTITION BY treg.id_sdm ORDER BY treg.last_update DESC) AS rn
+            FROM pdrd.reg_ptk treg
+        ) lreg ON tsdm.id_sdm = lreg.id_sdm AND lreg.rn = 1
+        LEFT JOIN pdrd.satuan_pendidikan tsp ON tsp.id_sp = lreg.id_sp
+        LEFT JOIN pdrd.keaktifan_ptk pkp ON pkp.id_reg_ptk = lreg.id_reg_ptk
+        LEFT JOIN ref.bentuk_pendidikan rbp ON tsp.id_bp = rbp.id_bp
+        LEFT JOIN pdrd.sms tsms ON tsms.id_sms = lreg.id_sms AND tsms.soft_delete = 0
+        WHERE pkp.id_thn_ajaran BETWEEN 2020 AND 2023
+            AND tsdm.soft_delete = 0
+            AND tsdm.id_jns_sdm = 12
+            AND tsp.stat_sp = 'A'
+            AND tsms.id_jns_sms = 3
+            AND LEFT(tsp.id_wil, 2) <> '99'
+            AND tsdm.id_stat_aktif IN('1','20','24','25','27')
+            AND lreg.id_jns_keluar IS NULL
+        GROUP BY rbp.nm_bp, pkp.id_thn_ajaran
+        ORDER BY rbp.nm_bp, pkp.id_thn_ajaran;
+        ");
+
+        return $data;
+    }
+
+    public function getTrendSertDosen() //NIDN-NIDK
+    {
+        $data = DB::select
+        ("
+        SELECT 
+            CASE 
+                WHEN LEFT(ps.nidn, 2) BETWEEN '00' AND '87' THEN 'NIDN'
+                WHEN LEFT(ps.nidn, 2) BETWEEN '88' AND '99' THEN 'NIDK'
+            END AS nidn_group,
+            prs.thn_sert,
+            COUNT(*) AS jumlah_sert
+        FROM pdrd.rwy_sertifikasi prs
+        JOIN pdrd.sdm ps ON prs.id_sdm = ps.id_sdm AND ps.soft_delete = 0
+        WHERE prs.id_jns_sert IN (1, 2, 4)
+            AND prs.thn_sert BETWEEN 2020 AND 2023
+            AND prs.soft_delete = 0
+            AND LEFT(ps.nidn, 2) BETWEEN '00' AND '99'
+        GROUP BY 
+            CASE 
+                WHEN LEFT(ps.nidn, 2) BETWEEN '00' AND '87' THEN 'NIDN'
+                WHEN LEFT(ps.nidn, 2) BETWEEN '88' AND '99' THEN 'NIDK'
+            END,
+            prs.thn_sert
+        ORDER BY prs.thn_sert, nidn_group DESC;
+        ");
+
+        return $data;
+    }
+
+    public function getTrendSertDosenLulusTdkLulus() //2020-2023(Sekarang)
+    {
+        $data = DB::select
+        ("
+        SELECT
+            prs.thn_sert,
+         CASE
+                WHEN sls.simpulan_akhir = 'L' THEN 'Lulus'
+                WHEN sls.simpulan_akhir = 'T' THEN 'Tidak Lulus'
+            END AS simpulan_akhir_in,
+            COUNT(*) AS jumlah_sert
+        FROM pdrd.rwy_sertifikasi prs
+        JOIN sdid.reg_serdos sr ON sr.id_sdm = prs.id_sdm AND sr.soft_delete = 0
+        JOIN sdid.lulus_serdos sls ON sls.id_usul_dys = sr.id_usul_dys AND sls.soft_delete = 0
+        WHERE prs.thn_sert BETWEEN 2020 AND 2023
+        AND prs.soft_delete = 0
+        AND prs.id_jns_sert IN (1,2,4)
+        GROUP BY 
+            prs.thn_sert, 
+            CASE
+                WHEN sls.simpulan_akhir = 'L' THEN 'Lulus'
+                WHEN sls.simpulan_akhir = 'T' THEN 'Tidak Lulus'
+            END
+        ORDER BY prs.thn_sert;
+        ");
+
+        return $data;
+    }
+
+    public function getTrendUsulanSerdos() //2020-2023
+    {
+        $data = DB::select
+        ("
+        SELECT u.id_stat_usul_serdos, p.tahun_sert, COUNT(s.id_rwy_sert) AS JML
+        FROM sdid.serdik s
+        JOIN sdid.reg_serdos r ON s.id_usul_dys = r.id_usul_dys
+        JOIN ref.periode_sert p ON p.id_periode_sert = r.id_periode_sert
+        JOIN sdid.usul_serdos_d1 u ON r.id_periode_sert = u.id_periode_sert
+        JOIN ref.status_usul_serdos su ON u.id_stat_usul_serdos = su.id_stat_usul_serdos
+        WHERE s.soft_delete = 0 AND p.tahun_sert BETWEEN 2020 AND 2023
+        GROUP BY u.id_stat_usul_serdos, p.tahun_sert
+        ORDER BY u.id_stat_usul_serdos, p.tahun_sert;
+        ");
+
+        return $data;
+    }
+
+    // public function getTrendPAKDosen() //2020-2023(Sekarang)
+    // {
+    //     $data = DB::select
+    //     ("
+    //     ");
+
+    //     return $data;
+    // }
     
 }
