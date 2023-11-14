@@ -45,3 +45,6 @@ Route::get('/api/trendsertdosen', 'API\\ApiController@getTrendSertDosen'); //NID
 Route::get('/api/trendsertdosenlulus', 'API\\ApiController@getTrendSertDosenLulusTdkLulus');
 Route::get('/api/trendusulanserdos', 'API\\ApiController@getTrendUsulanSerdos');
 Route::get('/api/trendsertdosen', 'API\\ApiController@getTrendSertDosen');
+
+Route::post('/api/authenticate', 'App\Http\Controllers\Auth\AuthController@authenticate');
+// $api->post('authenticate', 'App\Http\Controllers\Auth\AuthController@authenticate');

@@ -2,38 +2,86 @@
 
 namespace App;
 
-use Illuminate\Auth\Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Auth\Passwords\CanResetPassword;
-use Illuminate\Foundation\Auth\Access\Authorizable;
-use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
-use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
-use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
+use Illuminate\Foundation\Auth\User as AuthenticatableUser;
 
-class User extends Model implements AuthenticatableContract,
-                                    AuthorizableContract,
-                                    CanResetPasswordContract
+class User extends AuthenticatableUser implements Authenticatable, JWTSubject
 {
-    use Authenticatable, Authorizable, CanResetPassword;
+    use Notifiable;
+
+    // ...
 
     /**
-     * The database table used by the model.
+     * Get the unique identifier for the user.
      *
-     * @var string
+     * @return mixed
      */
-    protected $table = 'users';
+    public function getAuthIdentifier()
+    {
+        return $this->getKey();
+    }
 
     /**
-     * The attributes that are mass assignable.
+     * Get the password for the user.
      *
-     * @var array
+     * @return string
      */
-    protected $fillable = ['name', 'email', 'password'];
+    public function getAuthPassword()
+    {
+        return $this->password;
+    }
 
     /**
-     * The attributes excluded from the model's JSON form.
+     * Get the token value for the "remember me" session.
      *
-     * @var array
+     * @return string
      */
-    protected $hidden = ['password', 'remember_token'];
+    public function getRememberToken()
+    {
+        return $this->remember_token;
+    }
+
+    /**
+     * Set the token value for the "remember me" session.
+     *
+     * @param  string  $value
+     * @return void
+     */
+    public function setRememberToken($value)
+    {
+        $this->remember_token = $value;
+    }
+
+    /**
+     * Get the column name for the "remember me" token.
+     *
+     * @return string
+     */
+    public function getRememberTokenName()
+    {
+        return 'remember_token';
+    }
+
+    /**
+     * Get the identifier that will be stored in the subject claim of the JWT.
+     *
+     * @return mixed
+     */
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    /**
+     * Return a key value array, containing any custom claims to be added to the JWT.
+     *
+     * @return array
+     */
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
 }
