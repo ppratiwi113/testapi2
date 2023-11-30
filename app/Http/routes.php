@@ -22,7 +22,13 @@ use Illuminate\Support\Facades\Route;
 // });
 
 // Route::get('/api/jumlah-dosen', 'API\\ApiController@getJumlahDosen');
-Route::get('/api/jumlah-tendik', 'API\\ApiController@getJumlahTendik');
+
+
+//login token statis
+Route::post ('login', 'Auth\\AuthController@login');
+Route::group(['middleware' => 'jwt-auth'], function(){
+    Route::get('/api/jumlah-dosen', 'API\\ApiController@getJumlahDosen');
+    Route::get('/api/jumlah-tendik', 'API\\ApiController@getJumlahTendik');
 Route::get('/api/jabfungdosen', 'API\\ApiController@getJabfungDosen');
 Route::get('/api/japendosen', 'API\\ApiController@getJaPenDosen');
 Route::get('/api/japentendik', 'API\\ApiController@getJaPenTendik');
@@ -46,11 +52,6 @@ Route::get('/api/trendsertdosen', 'API\\ApiController@getTrendSertDosen'); //NID
 Route::get('/api/trendsertdosenlulus', 'API\\ApiController@getTrendSertDosenLulusTdkLulus');
 Route::get('/api/trendusulanserdos', 'API\\ApiController@getTrendUsulanSerdos');//masih error
 Route::get('/api/trendsertdosen', 'API\\ApiController@getTrendSertDosen');
-
-//login token statis
-Route::post ('login', 'Auth\\AuthController@login');
-Route::group(['middleware' => 'jwt-auth'], function(){
-    Route::get('/api/jumlah-dosen', 'API\\ApiController@getJumlahDosen');
 });
 
 

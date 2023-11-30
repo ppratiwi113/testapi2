@@ -21,11 +21,13 @@ class JWTMiddleware
     {
         $token = $request->header('Authorization');
 
+
         if (!$token) {
             return response()->json(['error' => 'Token not provided'], 401);
         }
 
         try {
+            $token = str_replace('Bearer ', '', $token);
             $secretKey = env('JWT_SECRET');
 
             //Decode token JWT
