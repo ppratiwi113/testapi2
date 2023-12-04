@@ -74,7 +74,7 @@ class ApiController extends Controller
     {
         $model = new ApiDashboard();
         $result = $model->getUsiaJekelDosen();
-       
+        
         return response()->json($result);
     }
     public function getIkatanKerjaDosen()
