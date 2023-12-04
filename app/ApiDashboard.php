@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 class ApiDashboard extends Model
 {
-    public function getJumlahDosen()
+    public function getJumlahDosen() //diganti tahunnya
     {
         $data = DB::select
         ("
@@ -32,7 +32,7 @@ class ApiDashboard extends Model
         return $data;
     }
 
-    public function getJumlahTendik()
+    public function getJumlahTendik() //diganti tahunnya
     {
         $data = DB::select
         ("
@@ -185,7 +185,7 @@ class ApiDashboard extends Model
         return $data;
     }
 
-    public function getJumSerDosen()
+    public function getJumSerDosen() //diganti tahunnya
     {
         $data = DB::select
         ("
@@ -202,7 +202,7 @@ class ApiDashboard extends Model
             pdrd.sdm AS ps ON prs.id_sdm = ps.id_sdm AND ps.soft_delete = 0
         WHERE 
             prs.id_jns_sert IN (1, 2, 4)
-            AND prs.thn_sert = 2023
+            AND prs.thn_sert = 2023 
             AND prs.soft_delete = 0
             AND LEFT(ps.nidn, 2) BETWEEN '00' AND '99'
         GROUP BY 
@@ -827,15 +827,23 @@ class ApiDashboard extends Model
     {
         $data = DB::select
         ("
-        SELECT u.id_stat_usul_serdos, p.tahun_sert, COUNT(s.id_rwy_sert) AS JML
-        FROM sdid.serdik s
-        JOIN sdid.reg_serdos r ON s.id_usul_dys = r.id_usul_dys
-        JOIN ref.periode_sert p ON p.id_periode_sert = r.id_periode_sert
-        JOIN sdid.usul_serdos_d1 u ON r.id_periode_sert = u.id_periode_sert
-        JOIN ref.status_usul_serdos su ON u.id_stat_usul_serdos = su.id_stat_usul_serdos
-        WHERE s.soft_delete = 0 AND p.tahun_sert BETWEEN 2020 AND 2023
-        GROUP BY u.id_stat_usul_serdos, p.tahun_sert
-        ORDER BY u.id_stat_usul_serdos, p.tahun_sert;
+        select 
+            a.tahun_sert,
+            SUM(a.tidak_diajukan) as tidak_diajukan,
+            SUM(a.diajukan) as diajukan
+        from (
+        select 
+            sps.tahun_sert,
+            sps.id_periode_sert,
+            SUM(case when rs.a_diajukan = 0 then 1 else 0 end) as tidak_diajukan,
+            SUM(case when rs.a_diajukan = 1 then 1 else 0 end) as diajukan
+        from ref.periode_sert sps
+        join sdid.reg_serdos rs on rs.id_periode_sert = sps.id_periode_sert and rs.soft_delete = 0
+        where sps.expired_date is null
+        and sps.tahun_sert between (date_part('year', now())-3) and date_part('year', now())
+        group by sps.tahun_sert, sps.id_periode_sert 
+        )as a
+        group by a.tahun_sert
         ");
 
         return $data;
