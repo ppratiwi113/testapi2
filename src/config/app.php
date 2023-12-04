@@ -146,12 +146,7 @@ return [
         App\Providers\RouteServiceProvider::class,
 
         //JWT auth provider
-        Tymon\JWTAuth\Providers\JWTAuthServiceProvider::class,
-
-        // //OAuth dependency
-        // LucaDegasperi\OAuth2Server\Storage\FluentStorageServiceProvider::class,
-        // LucaDegasperi\OAuth2Server\OAuth2ServerServiceProvider::class,
-
+        Tymon\JWTAuth\Providers\JWTAuthServiceProvider::class
 
     ],
 
@@ -201,8 +196,8 @@ return [
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View'      => Illuminate\Support\Facades\View::class,
         'JWTAuth'   => Tymon\JWTAuth\Facades\JWTAuth::class,
-        'JWTFactory'=> Tymon\JWTAuth\Facades\JWTFactory::class,
-        // 'Authorizer' => LucaDegasperi\OAuth2Server\Facades\Authorizer::class,
+        'JWTFactory'=> \Tymon\JWTAuth\Facades\JWTFactory::class,
+
     ],
 
 ];

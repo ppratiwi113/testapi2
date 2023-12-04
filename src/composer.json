@@ -8,8 +8,7 @@
         "php": ">=5.5.9",
         "laravel/framework": "5.1.*",
         "tymon/jwt-auth": "0.5.*",
-        "lucadegasperi/oauth2-server-laravel": "5.1.*",
-        "firebase/php-jwt": "^6.9"
+        "lucadegasperi/oauth2-server-laravel": "^5.2"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",

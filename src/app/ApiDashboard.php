@@ -61,7 +61,7 @@ class ApiDashboard extends Model
     {
         $data = DB::select
         ("
-        SELECT
+                SELECT
         CASE
             WHEN rjabfung.nm_jabfung IN ('Asisten Ahli', 'Lektor', 'Lektor Kepala', 'Profesor') THEN rjabfung.nm_jabfung
             ELSE 'Lainnya'
