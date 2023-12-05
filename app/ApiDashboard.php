@@ -664,6 +664,46 @@ class ApiDashboard extends Model
         return $data;
     }
 
+    public function getStatKepegawaian()
+    {
+        $data = DB::select
+        ("
+        SELECT 
+            CASE WHEN rsk.nm_stat_pegawai = 'PNS' THEN 'PNS' ELSE 'NON PNS' END AS status_pegawai,
+            COUNT(DISTINCT tsdm.id_sdm) AS value
+        FROM pdrd.sdm AS tsdm
+        LEFT JOIN (
+            SELECT
+                treg.id_sdm,
+                treg.id_reg_ptk,
+                treg.id_sp,
+                treg.id_jns_keluar,
+                treg.id_sms,
+                treg.id_stat_pegawai,
+                treg.id_ikatan_kerja,
+                ROW_NUMBER() OVER(PARTITION BY treg.id_sdm ORDER BY treg.last_update DESC) AS rn
+            FROM pdrd.reg_ptk AS treg
+        ) AS lreg ON tsdm.id_sdm = lreg.id_sdm AND lreg.rn = 1
+        LEFT JOIN pdrd.satuan_pendidikan AS tsp ON tsp.id_sp = lreg.id_sp
+        LEFT JOIN pdrd.keaktifan_ptk AS pkp ON pkp.id_reg_ptk = lreg.id_reg_ptk
+        LEFT JOIN ref.ikatan_kerja_sdm AS rik ON lreg.id_ikatan_kerja = rik.id_ikatan_kerja
+        LEFT JOIN ref.status_kepegawaian AS rsk ON lreg.id_stat_pegawai = rsk.id_stat_pegawai
+        LEFT JOIN pdrd.sms tsms ON tsms.id_sms = lreg.id_sms AND tsms.soft_delete = 0
+        WHERE pkp.id_thn_ajaran = 2023
+            AND tsdm.soft_delete = 0
+            AND tsdm.id_jns_sdm = 12
+            AND tsp.stat_sp = 'A'
+            AND tsms.id_jns_sms = 3
+            AND LEFT(tsp.id_wil,2) <> '99'
+            AND tsdm.id_stat_aktif IN('1','20','24','25','27')
+            AND lreg.id_jns_keluar IS NULL
+        GROUP BY CASE WHEN rsk.nm_stat_pegawai = 'PNS' THEN 'PNS' ELSE 'NON PNS' END;
+
+        ");
+
+        return $data;
+    }
+
     
     //Trend
 

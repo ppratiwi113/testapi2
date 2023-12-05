@@ -24,11 +24,13 @@ Route::group(['middleware' => 'jwt-auth'], function(){
     Route::get('/api/jmlhpngktdosenahli', 'API\\ApiController@getJumPangDosenperAhli');
     Route::get('/api/jumptaktifprov', 'API\\ApiController@getJumPTAktifPerProv');
     Route::get('/api/jumptaktifpendik', 'API\\ApiController@getJumPTAktifperBentPend');
+    Route::get('/api/statkepegawaian', 'API\\ApiController@getStatKepegawaian');
+    //trend
     Route::get('/api/trendjmlhdosen', 'API\\ApiController@getTrendJumDosen');
     Route::get('/api/trendjmlhtendik', 'API\\ApiController@getTrendJumTendik');
     Route::get('/api/trendbentukpend', 'API\\ApiController@getTrendBentukPend');
     Route::get('/api/trendsertdosen', 'API\\ApiController@getTrendSertDosen'); //NIDN-NIDK
     Route::get('/api/trendsertdosenlulus', 'API\\ApiController@getTrendSertDosenLulusTdkLulus');
-    Route::get('/api/trendusulanserdos', 'API\\ApiController@getTrendUsulanSerdos');//masih error
+    Route::get('/api/trendusulanserdos', 'API\\ApiController@getTrendUsulanSerdos');
     Route::get('/api/trendsertdosen', 'API\\ApiController@getTrendSertDosen');
 });

@@ -145,6 +145,14 @@ class ApiController extends Controller
         return response()->json($result);
     }
 
+    public function getStatKepegawaian()
+    {
+        $model = new ApiDashboard();
+        $result = $model->getStatKepegawaian();
+       
+        return response()->json($result);
+    }
+
     //Trend
     public function getTrendJumDosen()
     {
