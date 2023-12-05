@@ -119,7 +119,7 @@ class ApiDashboard extends Model
             pdrd.keaktifan_ptk AS pkp ON prp.id_reg_ptk = pkp.id_reg_ptk
         JOIN
             pdrd.sdm AS ps ON prp.id_sdm = ps.id_sdm
-        JOIN (
+        LEFT JOIN (
             SELECT id_sdm, MAX(id_jenj_didik) AS max_id_jenj_didik
             FROM pdrd.rwy_pend_formal
             GROUP BY id_sdm
