@@ -17,7 +17,7 @@ class ApiDashboard extends Model
         LEFT JOIN pdrd.keaktifan_ptk tkeaktifan ON tkeaktifan.id_reg_ptk = treg.id_reg_ptk AND tkeaktifan.soft_delete = 0
         LEFT JOIN pdrd.satuan_pendidikan tsp ON tsp.id_sp = treg.id_sp AND tsp.soft_delete = 0
         LEFT JOIN pdrd.sms tsms ON tsms.id_sms = treg.id_sms AND tsms.soft_delete = 0
-        WHERE tkeaktifan.id_thn_ajaran = 2023
+        WHERE tkeaktifan.id_thn_ajaran = EXTRACT(YEAR FROM CURRENT_DATE) -- Menggunakan tahun sekarang
         AND tkeaktifan.a_sp_homebase = 1
         AND tsdm.soft_delete = 0
         AND tsdm.id_jns_sdm = 12
@@ -27,6 +27,7 @@ class ApiDashboard extends Model
         AND tsdm.id_stat_aktif IN ('1')
         AND treg.id_jns_keluar IS NULL
         GROUP BY tkeaktifan.id_thn_ajaran, tsdm.id_stat_aktif;
+
         ");
 
         return $data;
@@ -42,7 +43,7 @@ class ApiDashboard extends Model
         LEFT JOIN pdrd.keaktifan_ptk tkeaktifan ON tkeaktifan.id_reg_ptk = treg.id_reg_ptk AND tkeaktifan.soft_delete = 0
         LEFT JOIN pdrd.satuan_pendidikan tsp ON tsp.id_sp = treg.id_sp AND tsp.soft_delete = 0
         LEFT JOIN pdrd.sms tsms ON tsms.id_sms = treg.id_sms AND tsms.soft_delete = 0
-        WHERE tkeaktifan.id_thn_ajaran = 2023
+        WHERE tkeaktifan.id_thn_ajaran = EXTRACT(YEAR FROM CURRENT_DATE)
         AND tkeaktifan.a_sp_homebase = 1
         AND tsdm.soft_delete = 0
         AND tsdm.id_jns_sdm = 13
@@ -100,11 +101,11 @@ class ApiDashboard extends Model
         return $data;
     }
 
-    public function getJaPenDosen()
+    public function getJaPenDosen()//masih error query
     {
         $data = DB::select
         ("
-                SELECT
+        SELECT
             CASE
                 WHEN rjd.nm_jenj_didik IN ('D1', 'D2', 'D3', 'D4', 'Informal', 'Lainnya', 'Non formal',
                 'Profesi', 'S1', 'S2', 'S2 Terapan', 'S3', 'S3 Terapan', 'SMA / sederajat', 'Sp-1', 'Sp-2') THEN rjd.nm_jenj_didik
@@ -118,7 +119,7 @@ class ApiDashboard extends Model
             pdrd.keaktifan_ptk AS pkp ON prp.id_reg_ptk = pkp.id_reg_ptk
         JOIN
             pdrd.sdm AS ps ON prp.id_sdm = ps.id_sdm
-        JOIN (
+        LEFT JOIN (
             SELECT id_sdm, MAX(id_jenj_didik) AS max_id_jenj_didik
             FROM pdrd.rwy_pend_formal
             GROUP BY id_sdm
@@ -147,7 +148,7 @@ class ApiDashboard extends Model
         return $data;
     }
 
-    public function getJaPenTendik()
+    public function getJaPenTendik()//masih error di query
     {
         $data = DB::select
         ("
@@ -243,41 +244,47 @@ class ApiDashboard extends Model
         $data = DB::select
         ("
         SELECT
-            tsdm.jk AS jenis_kelamin,
-            CASE
-                WHEN EXTRACT(YEAR FROM CURRENT_DATE) - EXTRACT(YEAR FROM tsdm.tgl_lahir) < 30 THEN '< 30 tahun'
-                WHEN EXTRACT(YEAR FROM CURRENT_DATE) - EXTRACT(YEAR FROM tsdm.tgl_lahir) BETWEEN 30 AND 39 THEN '30-39 tahun'
-                WHEN EXTRACT(YEAR FROM CURRENT_DATE) - EXTRACT(YEAR FROM tsdm.tgl_lahir) BETWEEN 40 AND 49 THEN '40-49 tahun'
-                WHEN EXTRACT(YEAR FROM CURRENT_DATE) - EXTRACT(YEAR FROM tsdm.tgl_lahir) BETWEEN 50 AND 59 THEN '50-59 tahun'
-                WHEN EXTRACT(YEAR FROM CURRENT_DATE) - EXTRACT(YEAR FROM tsdm.tgl_lahir) >= 60 THEN '> 60 tahun'
-            END AS kelompok_usia,
-            COUNT(DISTINCT treg.id_sdm) AS jml_dosen
-        FROM pdrd.sdm tsdm
-        LEFT JOIN pdrd.reg_ptk treg ON treg.id_sdm = tsdm.id_sdm AND treg.soft_delete = 0
-        LEFT JOIN pdrd.keaktifan_ptk tkeaktifan ON tkeaktifan.id_reg_ptk = treg.id_reg_ptk AND tkeaktifan.soft_delete = 0
-        LEFT JOIN pdrd.satuan_pendidikan tsp ON tsp.id_sp = treg.id_sp AND tsp.soft_delete = 0
-        LEFT JOIN pdrd.sms tsms ON tsms.id_sms = treg.id_sms AND tsms.soft_delete = 0
-        WHERE tkeaktifan.id_thn_ajaran = 2023
+            kelompok_usia AS usia,
+            SUM(CASE WHEN jenis_kelamin = 'L' THEN jml_dosen ELSE 0 END) AS value_lk,
+            SUM(CASE WHEN jenis_kelamin = 'P' THEN jml_dosen ELSE 0 END) AS value_pr
+        FROM (
+            SELECT
+                tsdm.jk AS jenis_kelamin,
+                CASE
+                    WHEN EXTRACT(YEAR FROM AGE(tsdm.tgl_lahir)) < 30 THEN '< 30 tahun'
+                    WHEN EXTRACT(YEAR FROM AGE(tsdm.tgl_lahir)) BETWEEN 30 AND 39 THEN '30-39 tahun'
+                    WHEN EXTRACT(YEAR FROM AGE(tsdm.tgl_lahir)) BETWEEN 40 AND 49 THEN '40-49 tahun'
+                    WHEN EXTRACT(YEAR FROM AGE(tsdm.tgl_lahir)) BETWEEN 50 AND 59 THEN '50-59 tahun'
+                    WHEN EXTRACT(YEAR FROM AGE(tsdm.tgl_lahir)) >= 60 THEN '> 60 tahun'
+                END AS kelompok_usia,
+                COUNT(DISTINCT treg.id_sdm) AS jml_dosen
+            FROM pdrd.sdm tsdm
+            LEFT JOIN pdrd.reg_ptk treg ON treg.id_sdm = tsdm.id_sdm AND treg.soft_delete = 0
+            LEFT JOIN pdrd.keaktifan_ptk tkeaktifan ON tkeaktifan.id_reg_ptk = treg.id_reg_ptk AND tkeaktifan.soft_delete = 0
+            LEFT JOIN pdrd.satuan_pendidikan tsp ON tsp.id_sp = treg.id_sp AND tsp.soft_delete = 0
+            LEFT JOIN pdrd.sms tsms ON tsms.id_sms = treg.id_sms AND tsms.soft_delete = 0
+            WHERE tkeaktifan.id_thn_ajaran = EXTRACT(YEAR FROM CURRENT_DATE)
             AND tkeaktifan.a_sp_homebase = 1
             AND tsdm.soft_delete = 0
             AND tsdm.id_jns_sdm = 12
             AND tsp.stat_sp = 'A'
             AND tsms.id_jns_sms = 3
             AND LEFT(tsp.id_wil, 2) <> '99'
-            AND tsdm.id_stat_aktif IN ('1', '20', '24', '25', '27')
+            AND tsdm.id_stat_aktif IN('1', '20', '24', '25', '27')
             AND treg.id_jns_keluar IS NULL
-        GROUP BY
-            tsdm.jk,
-            CASE
-                WHEN EXTRACT(YEAR FROM CURRENT_DATE) - EXTRACT(YEAR FROM tsdm.tgl_lahir) < 30 THEN '< 30 tahun'
-                WHEN EXTRACT(YEAR FROM CURRENT_DATE) - EXTRACT(YEAR FROM tsdm.tgl_lahir) BETWEEN 30 AND 39 THEN '30-39 tahun'
-                WHEN EXTRACT(YEAR FROM CURRENT_DATE) - EXTRACT(YEAR FROM tsdm.tgl_lahir) BETWEEN 40 AND 49 THEN '40-49 tahun'
-                WHEN EXTRACT(YEAR FROM CURRENT_DATE) - EXTRACT(YEAR FROM tsdm.tgl_lahir) BETWEEN 50 AND 59 THEN '50-59 tahun'
-                WHEN EXTRACT(YEAR FROM CURRENT_DATE) - EXTRACT(YEAR FROM tsdm.tgl_lahir) >= 60 THEN '> 60 tahun'
-            END
-        ORDER BY
-            tsdm.jk ASC,
-            kelompok_usia ASC;
+            GROUP BY
+                tsdm.jk,
+                CASE
+                    WHEN EXTRACT(YEAR FROM AGE(tsdm.tgl_lahir)) < 30 THEN '< 30 tahun'
+                    WHEN EXTRACT(YEAR FROM AGE(tsdm.tgl_lahir)) BETWEEN 30 AND 39 THEN '30-39 tahun'
+                    WHEN EXTRACT(YEAR FROM AGE(tsdm.tgl_lahir)) BETWEEN 40 AND 49 THEN '40-49 tahun'
+                    WHEN EXTRACT(YEAR FROM AGE(tsdm.tgl_lahir)) BETWEEN 50 AND 59 THEN '50-59 tahun'
+                    WHEN EXTRACT(YEAR FROM AGE(tsdm.tgl_lahir)) >= 60 THEN '> 60 tahun'
+                END
+        ) AS SubQuery
+        GROUP BY kelompok_usia
+        ORDER BY kelompok_usia ASC;
+
 
         ");
 
@@ -312,7 +319,7 @@ class ApiDashboard extends Model
         LEFT JOIN pdrd.keaktifan_ptk pkp ON pkp.id_reg_ptk = lreg.id_reg_ptk
         LEFT JOIN ref.ikatan_kerja_sdm rik ON lreg.id_ikatan_kerja = rik.id_ikatan_kerja
         LEFT JOIN pdrd.sms tsms ON tsms.id_sms = lreg.id_sms AND tsms.soft_delete = 0
-        WHERE pkp.id_thn_ajaran = 2023
+        WHERE pkp.id_thn_ajaran = EXTRACT(YEAR FROM CURRENT_DATE)
             AND tsdm.soft_delete = 0
             AND tsdm.id_jns_sdm = 12
             AND tsp.stat_sp = 'A'
@@ -384,7 +391,7 @@ class ApiDashboard extends Model
         LEFT JOIN pdrd.keaktifan_ptk pkp ON pkp.id_reg_ptk = lreg.id_reg_ptk
         LEFT JOIN ref.bentuk_pendidikan rbp ON tsp.id_bp = rbp.id_bp
         LEFT JOIN pdrd.sms tsms ON tsms.id_sms = lreg.id_sms AND tsms.soft_delete = 0
-        WHERE pkp.id_thn_ajaran = 2023
+        WHERE pkp.id_thn_ajaran = EXTRACT(YEAR FROM CURRENT_DATE)
             AND tsdm.soft_delete = 0
             AND tsdm.id_jns_sdm = 12
             AND tsp.stat_sp = 'A'
@@ -419,7 +426,7 @@ class ApiDashboard extends Model
         LEFT JOIN pdrd.keaktifan_ptk pkp ON pkp.id_reg_ptk = lreg.id_reg_ptk
         LEFT JOIN ref.bentuk_pendidikan rbp ON tsp.id_bp = rbp.id_bp
         LEFT JOIN pdrd.sms tsms ON tsms.id_sms = lreg.id_sms AND tsms.soft_delete = 0
-        WHERE pkp.id_thn_ajaran = 2023
+        WHERE pkp.id_thn_ajaran = EXTRACT(YEAR FROM CURRENT_DATE)
         AND tsdm.soft_delete = 0
         AND tsdm.id_jns_sdm = 13
         AND tsp.stat_sp = 'A'
@@ -473,45 +480,45 @@ class ApiDashboard extends Model
         return $data;
     }
 
-    public function getJenjPendDosen()
-    {
-        $data = DB::select
-        ("
-        SELECT
-            CASE
-                WHEN rjd.nm_jenj_didik IN (
-                    'D1', 'D2', 'D3', 'D4', 'Informal', 'Lainnya', 'Non formal', 'Profesi', 'S1',
-                    'S2', 'S2 Terapan', 'S3', 'S3 Terapan', 'SMA / sederajat', 'Sp-1', 'Sp-2'
-                ) THEN rjd.nm_jenj_didik
-                ELSE 'Tanpa Jenjang'
-            END AS jenjang_pendidikan,
-            COUNT(DISTINCT prp.id_sdm) AS jml_tendik,
-            MAX(ps.last_update) AS last_update
-        FROM
-            pdrd.reg_ptk AS prp
-        INNER JOIN
-            pdrd.keaktifan_ptk AS pkp ON prp.id_reg_ptk = pkp.id_reg_ptk
-        INNER JOIN
-            pdrd.sdm AS ps ON prp.id_sdm = ps.id_sdm
-        INNER JOIN
-            pdrd.rwy_pend_formal AS prpf ON prp.id_sdm = prpf.id_sdm
-        INNER JOIN
-            ref.jenjang_pendidikan AS rjd ON prpf.id_jenj_didik = rjd.id_jenj_didik
-        WHERE
-            ps.id_jns_sdm = 12
-            AND ps.id_stat_aktif = 1
-            AND ps.soft_delete = 0
-            AND pkp.soft_delete = 0
-            AND prp.soft_delete = 0
-        GROUP BY
-            rjd.nm_jenj_didik
-        ORDER BY
-            rjd.nm_jenj_didik;
+    // public function getJenjPendDosen()
+    // {
+    //     $data = DB::select
+    //     ("
+    //     SELECT
+    //         CASE
+    //             WHEN rjd.nm_jenj_didik IN (
+    //                 'D1', 'D2', 'D3', 'D4', 'Informal', 'Lainnya', 'Non formal', 'Profesi', 'S1',
+    //                 'S2', 'S2 Terapan', 'S3', 'S3 Terapan', 'SMA / sederajat', 'Sp-1', 'Sp-2'
+    //             ) THEN rjd.nm_jenj_didik
+    //             ELSE 'Tanpa Jenjang'
+    //         END AS jenjang_pendidikan,
+    //         COUNT(DISTINCT prp.id_sdm) AS jml_tendik,
+    //         MAX(ps.last_update) AS last_update
+    //     FROM
+    //         pdrd.reg_ptk AS prp
+    //     INNER JOIN
+    //         pdrd.keaktifan_ptk AS pkp ON prp.id_reg_ptk = pkp.id_reg_ptk
+    //     INNER JOIN
+    //         pdrd.sdm AS ps ON prp.id_sdm = ps.id_sdm
+    //     INNER JOIN
+    //         pdrd.rwy_pend_formal AS prpf ON prp.id_sdm = prpf.id_sdm
+    //     INNER JOIN
+    //         ref.jenjang_pendidikan AS rjd ON prpf.id_jenj_didik = rjd.id_jenj_didik
+    //     WHERE
+    //         ps.id_jns_sdm = 12
+    //         AND ps.id_stat_aktif = 1
+    //         AND ps.soft_delete = 0
+    //         AND pkp.soft_delete = 0
+    //         AND prp.soft_delete = 0
+    //     GROUP BY
+    //         rjd.nm_jenj_didik
+    //     ORDER BY
+    //         rjd.nm_jenj_didik;
 
-        ");
+    //     ");
 
-        return $data;
-    }
+    //     return $data;
+    // }
 
     public function getJumPangkatTendik()
     {
@@ -657,16 +664,47 @@ class ApiDashboard extends Model
         return $data;
     }
 
-    // public function getKoordinatPendTinggi()
-    // {
-    //     $data = DB::select
-    //     ("
-    //     ");
+    public function getStatKepegawaian()
+    {
+        $data = DB::select
+        ("
+        SELECT 
+            CASE WHEN rsk.nm_stat_pegawai = 'PNS' THEN 'PNS' ELSE 'NON PNS' END AS status_pegawai,
+            COUNT(DISTINCT tsdm.id_sdm) AS value
+        FROM pdrd.sdm AS tsdm
+        LEFT JOIN (
+            SELECT
+                treg.id_sdm,
+                treg.id_reg_ptk,
+                treg.id_sp,
+                treg.id_jns_keluar,
+                treg.id_sms,
+                treg.id_stat_pegawai,
+                treg.id_ikatan_kerja,
+                ROW_NUMBER() OVER(PARTITION BY treg.id_sdm ORDER BY treg.last_update DESC) AS rn
+            FROM pdrd.reg_ptk AS treg
+        ) AS lreg ON tsdm.id_sdm = lreg.id_sdm AND lreg.rn = 1
+        LEFT JOIN pdrd.satuan_pendidikan AS tsp ON tsp.id_sp = lreg.id_sp
+        LEFT JOIN pdrd.keaktifan_ptk AS pkp ON pkp.id_reg_ptk = lreg.id_reg_ptk
+        LEFT JOIN ref.ikatan_kerja_sdm AS rik ON lreg.id_ikatan_kerja = rik.id_ikatan_kerja
+        LEFT JOIN ref.status_kepegawaian AS rsk ON lreg.id_stat_pegawai = rsk.id_stat_pegawai
+        LEFT JOIN pdrd.sms tsms ON tsms.id_sms = lreg.id_sms AND tsms.soft_delete = 0
+        WHERE pkp.id_thn_ajaran = 2023
+            AND tsdm.soft_delete = 0
+            AND tsdm.id_jns_sdm = 12
+            AND tsp.stat_sp = 'A'
+            AND tsms.id_jns_sms = 3
+            AND LEFT(tsp.id_wil,2) <> '99'
+            AND tsdm.id_stat_aktif IN('1','20','24','25','27')
+            AND lreg.id_jns_keluar IS NULL
+        GROUP BY CASE WHEN rsk.nm_stat_pegawai = 'PNS' THEN 'PNS' ELSE 'NON PNS' END;
 
-    //     return $data;
-    // }
+        ");
 
+        return $data;
+    }
 
+    
     //Trend
 
     public function getTrendJumDosen()

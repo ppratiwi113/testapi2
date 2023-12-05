@@ -6,7 +6,6 @@ use Closure;
 use Exception;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
-use Illuminate\Support\Facades\Config;
 
 class JWTMiddleware
 {

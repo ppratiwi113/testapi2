@@ -3,9 +3,6 @@
 namespace App\Http\Controllers\API;
 
 use App\ApiDashboard;
-use Illuminate\Http\Request;
-
-use App\Http\Requests;
 use App\Http\Controllers\Controller;
 
 class ApiController extends Controller
@@ -112,13 +109,13 @@ class ApiController extends Controller
        
         return response()->json($result);
     }
-    public function getJenjPendDosen()
-    {
-        $model = new ApiDashboard();
-        $result = $model->getJenjPendDosen();
+    // public function getJenjPendDosen()
+    // {
+    //     $model = new ApiDashboard();
+    //     $result = $model->getJenjPendDosen();
        
-        return response()->json($result);
-    }
+    //     return response()->json($result);
+    // }
     public function getJumPangkatTendik()
     {
         $model = new ApiDashboard();
@@ -144,6 +141,14 @@ class ApiController extends Controller
     {
         $model = new ApiDashboard();
         $result = $model->getJumPTAktifperBentPend();
+       
+        return response()->json($result);
+    }
+
+    public function getStatKepegawaian()
+    {
+        $model = new ApiDashboard();
+        $result = $model->getStatKepegawaian();
        
         return response()->json($result);
     }
