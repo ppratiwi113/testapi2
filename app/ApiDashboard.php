@@ -243,47 +243,48 @@ class ApiDashboard extends Model
     {
         $data = DB::select
         ("
-        SELECT
-            kelompok_usia AS usia,
-            SUM(CASE WHEN jenis_kelamin = 'L' THEN jml_dosen ELSE 0 END) AS value_lk,
-            SUM(CASE WHEN jenis_kelamin = 'P' THEN jml_dosen ELSE 0 END) AS value_pr
+                SELECT
+        kelompok_usia AS usia,
+            SUM(CAST(CASE WHEN jenis_kelamin = 'L' THEN jml_dosen ELSE 0 END AS INT)) AS value_lk,
+            SUM(CAST(CASE WHEN jenis_kelamin = 'P' THEN jml_dosen ELSE 0 END AS INT)) AS value_pr
         FROM (
-            SELECT
-                tsdm.jk AS jenis_kelamin,
-                CASE
-                    WHEN EXTRACT(YEAR FROM AGE(tsdm.tgl_lahir)) < 30 THEN '< 30 tahun'
-                    WHEN EXTRACT(YEAR FROM AGE(tsdm.tgl_lahir)) BETWEEN 30 AND 39 THEN '30-39 tahun'
-                    WHEN EXTRACT(YEAR FROM AGE(tsdm.tgl_lahir)) BETWEEN 40 AND 49 THEN '40-49 tahun'
-                    WHEN EXTRACT(YEAR FROM AGE(tsdm.tgl_lahir)) BETWEEN 50 AND 59 THEN '50-59 tahun'
-                    WHEN EXTRACT(YEAR FROM AGE(tsdm.tgl_lahir)) >= 60 THEN '> 60 tahun'
-                END AS kelompok_usia,
-                COUNT(DISTINCT treg.id_sdm) AS jml_dosen
-            FROM pdrd.sdm tsdm
-            LEFT JOIN pdrd.reg_ptk treg ON treg.id_sdm = tsdm.id_sdm AND treg.soft_delete = 0
-            LEFT JOIN pdrd.keaktifan_ptk tkeaktifan ON tkeaktifan.id_reg_ptk = treg.id_reg_ptk AND tkeaktifan.soft_delete = 0
-            LEFT JOIN pdrd.satuan_pendidikan tsp ON tsp.id_sp = treg.id_sp AND tsp.soft_delete = 0
-            LEFT JOIN pdrd.sms tsms ON tsms.id_sms = treg.id_sms AND tsms.soft_delete = 0
-            WHERE tkeaktifan.id_thn_ajaran = EXTRACT(YEAR FROM CURRENT_DATE)
-            AND tkeaktifan.a_sp_homebase = 1
-            AND tsdm.soft_delete = 0
-            AND tsdm.id_jns_sdm = 12
-            AND tsp.stat_sp = 'A'
-            AND tsms.id_jns_sms = 3
-            AND LEFT(tsp.id_wil, 2) <> '99'
-            AND tsdm.id_stat_aktif IN('1', '20', '24', '25', '27')
-            AND treg.id_jns_keluar IS NULL
-            GROUP BY
-                tsdm.jk,
-                CASE
-                    WHEN EXTRACT(YEAR FROM AGE(tsdm.tgl_lahir)) < 30 THEN '< 30 tahun'
-                    WHEN EXTRACT(YEAR FROM AGE(tsdm.tgl_lahir)) BETWEEN 30 AND 39 THEN '30-39 tahun'
-                    WHEN EXTRACT(YEAR FROM AGE(tsdm.tgl_lahir)) BETWEEN 40 AND 49 THEN '40-49 tahun'
-                    WHEN EXTRACT(YEAR FROM AGE(tsdm.tgl_lahir)) BETWEEN 50 AND 59 THEN '50-59 tahun'
-                    WHEN EXTRACT(YEAR FROM AGE(tsdm.tgl_lahir)) >= 60 THEN '> 60 tahun'
-                END
+        SELECT
+            tsdm.jk AS jenis_kelamin,
+            CASE
+                WHEN EXTRACT(YEAR FROM AGE(CURRENT_DATE, tsdm.tgl_lahir)) < 30 THEN '< 30 tahun'
+                WHEN EXTRACT(YEAR FROM AGE(CURRENT_DATE, tsdm.tgl_lahir)) BETWEEN 30 AND 39 THEN '30-39 tahun'
+                WHEN EXTRACT(YEAR FROM AGE(CURRENT_DATE, tsdm.tgl_lahir)) BETWEEN 40 AND 49 THEN '40-49 tahun'
+                WHEN EXTRACT(YEAR FROM AGE(CURRENT_DATE, tsdm.tgl_lahir)) BETWEEN 50 AND 59 THEN '50-59 tahun'
+                WHEN EXTRACT(YEAR FROM AGE(CURRENT_DATE, tsdm.tgl_lahir)) >= 60 THEN '> 60 tahun'
+            END AS kelompok_usia,
+            COUNT(DISTINCT treg.id_sdm) AS jml_dosen
+        FROM pdrd.sdm tsdm
+        LEFT JOIN pdrd.reg_ptk treg ON treg.id_sdm = tsdm.id_sdm AND treg.soft_delete = 0
+        LEFT JOIN pdrd.keaktifan_ptk tkeaktifan ON tkeaktifan.id_reg_ptk = treg.id_reg_ptk AND tkeaktifan.soft_delete = 0
+        LEFT JOIN pdrd.satuan_pendidikan tsp ON tsp.id_sp = treg.id_sp AND tsp.soft_delete = 0
+        LEFT JOIN pdrd.sms tsms ON tsms.id_sms = treg.id_sms AND tsms.soft_delete = 0
+        WHERE tkeaktifan.id_thn_ajaran = 2023
+        AND tkeaktifan.a_sp_homebase = 1
+        AND tsdm.soft_delete = 0
+        AND tsdm.id_jns_sdm = 12
+        AND tsp.stat_sp = 'A'
+        AND tsms.id_jns_sms = 3
+        AND LEFT(tsp.id_wil, 2) <> '99'
+        AND tsdm.id_stat_aktif IN('1', '20', '24', '25', '27')
+        AND treg.id_jns_keluar IS NULL
+        GROUP BY
+            tsdm.jk,
+            CASE
+                WHEN EXTRACT(YEAR FROM AGE(CURRENT_DATE, tsdm.tgl_lahir)) < 30 THEN '< 30 tahun'
+                WHEN EXTRACT(YEAR FROM AGE(CURRENT_DATE, tsdm.tgl_lahir)) BETWEEN 30 AND 39 THEN '30-39 tahun'
+                WHEN EXTRACT(YEAR FROM AGE(CURRENT_DATE, tsdm.tgl_lahir)) BETWEEN 40 AND 49 THEN '40-49 tahun'
+                WHEN EXTRACT(YEAR FROM AGE(CURRENT_DATE, tsdm.tgl_lahir)) BETWEEN 50 AND 59 THEN '50-59 tahun'
+                WHEN EXTRACT(YEAR FROM AGE(CURRENT_DATE, tsdm.tgl_lahir)) >= 60 THEN '> 60 tahun'
+            END
         ) AS SubQuery
         GROUP BY kelompok_usia
         ORDER BY kelompok_usia ASC;
+
 
 
         ");
@@ -866,9 +867,9 @@ class ApiDashboard extends Model
         $data = DB::select
         ("
         select 
-            a.tahun_sert,
-            SUM(a.tidak_diajukan) as tidak_diajukan,
-            SUM(a.diajukan) as diajukan
+            CAST(a.tahun_sert AS VARCHAR) AS tahun_sert,
+            SUM(CAST(a.tidak_diajukan AS INT)) AS tidak_diajukan,
+            SUM(CAST(a.diajukan AS INT)) AS diajukan
         from (
         select 
             sps.tahun_sert,
