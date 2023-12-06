@@ -113,22 +113,55 @@ class ApiDashboard extends Model
     {
         $data = DB::select
         ("
-        SELECT COUNT(tsdm.id_sdm) AS total, tsdm.id_stat_aktif
-        FROM pdrd.sdm tsdm
-        LEFT JOIN pdrd.reg_ptk treg ON treg.id_sdm = tsdm.id_sdm AND treg.soft_delete = 0
-        LEFT JOIN pdrd.keaktifan_ptk tkeaktifan ON tkeaktifan.id_reg_ptk = treg.id_reg_ptk AND tkeaktifan.soft_delete = 0
-        LEFT JOIN pdrd.satuan_pendidikan tsp ON tsp.id_sp = treg.id_sp AND tsp.soft_delete = 0
-        LEFT JOIN pdrd.sms tsms ON tsms.id_sms = treg.id_sms AND tsms.soft_delete = 0
-        WHERE tkeaktifan.id_thn_ajaran = EXTRACT(YEAR FROM CURRENT_DATE)
-        AND tkeaktifan.a_sp_homebase = 1
-        AND tsdm.soft_delete = 0
-        AND tsdm.id_jns_sdm = 13
-        AND tsp.stat_sp = 'A'
-        AND LEFT(tsp.id_wil, 2) <> '99'
-        AND tsdm.id_stat_aktif IN ('1', '20', '24', '25', '27')
-        AND treg.id_jns_keluar IS NULL
-        GROUP BY tkeaktifan.id_thn_ajaran, tsdm.id_stat_aktif
-
+        SELECT
+            COALESCE(tahun_ini.total, 0) AS total_tendik_tahun_ini,
+            COALESCE(tahun_ini.total, 0) - COALESCE(tahun_sebelumnya.total, 0) AS peningkatan_dari_tahun_lalu
+        FROM (
+            SELECT
+                COUNT(tsdm.id_sdm) AS total
+            FROM
+                pdrd.sdm tsdm
+            LEFT JOIN
+                pdrd.reg_ptk treg ON treg.id_sdm = tsdm.id_sdm AND treg.soft_delete = 0
+            LEFT JOIN
+                pdrd.keaktifan_ptk tkeaktifan ON tkeaktifan.id_reg_ptk = treg.id_reg_ptk AND tkeaktifan.soft_delete = 0
+            LEFT JOIN
+                pdrd.satuan_pendidikan tsp ON tsp.id_sp = treg.id_sp AND tsp.soft_delete = 0
+            LEFT JOIN
+                pdrd.sms tsms ON tsms.id_sms = treg.id_sms AND tsms.soft_delete = 0
+            WHERE
+                tkeaktifan.id_thn_ajaran = EXTRACT(YEAR FROM CURRENT_DATE)
+                AND tkeaktifan.a_sp_homebase = 1
+                AND tsdm.soft_delete = 0
+                AND tsdm.id_jns_sdm = 13
+                AND tsp.stat_sp = 'A'
+                AND LEFT(tsp.id_wil, 2) <> '99'
+                AND tsdm.id_stat_aktif IN ('1', '20', '24', '25', '27')
+                AND treg.id_jns_keluar IS NULL
+        ) AS tahun_ini
+        CROSS JOIN (
+            SELECT
+                COUNT(tsdm.id_sdm) AS total
+            FROM
+                pdrd.sdm tsdm
+            LEFT JOIN
+                pdrd.reg_ptk treg ON treg.id_sdm = tsdm.id_sdm AND treg.soft_delete = 0
+            LEFT JOIN
+                pdrd.keaktifan_ptk tkeaktifan ON tkeaktifan.id_reg_ptk = treg.id_reg_ptk AND tkeaktifan.soft_delete = 0
+            LEFT JOIN
+                pdrd.satuan_pendidikan tsp ON tsp.id_sp = treg.id_sp AND tsp.soft_delete = 0
+            LEFT JOIN
+                pdrd.sms tsms ON tsms.id_sms = treg.id_sms AND tsms.soft_delete = 0
+            WHERE
+                tkeaktifan.id_thn_ajaran = EXTRACT(YEAR FROM CURRENT_DATE) - 1 -- Tahun sebelumnya
+                AND tkeaktifan.a_sp_homebase = 1
+                AND tsdm.soft_delete = 0
+                AND tsdm.id_jns_sdm = 13
+                AND tsp.stat_sp = 'A'
+                AND LEFT(tsp.id_wil, 2) <> '99'
+                AND tsdm.id_stat_aktif IN ('1', '20', '24', '25', '27')
+                AND treg.id_jns_keluar IS NULL
+        ) AS tahun_sebelumnya;
         ");
 
         return $data;
