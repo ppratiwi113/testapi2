@@ -19,7 +19,6 @@ Route::group(['middleware' => 'jwt-auth'], function(){
     Route::get('/api/bentukpenddosen', 'API\\ApiController@getBentukPendDosen');
     Route::get('/api/bentukpendtendik', 'API\\ApiController@getBentukPendTendik');
     Route::get('/api/jmlhpangkatdosen', 'API\\ApiController@getJumPangkatDosen');
-    // Route::get('/api/jenjangpendtendik', 'API\\ApiController@getJenjPend');
     Route::get('/api/jmlhpangkattendik', 'API\\ApiController@getJumPangkatTendik');
     Route::get('/api/jmlhpngktdosenahli', 'API\\ApiController@getJumPangDosenperAhli');
     Route::get('/api/jumptaktifprov', 'API\\ApiController@getJumPTAktifPerProv');
@@ -32,5 +31,5 @@ Route::group(['middleware' => 'jwt-auth'], function(){
     Route::get('/api/trendsertdosen', 'API\\ApiController@getTrendSertDosen'); //NIDN-NIDK
     Route::get('/api/trendsertdosenlulus', 'API\\ApiController@getTrendSertDosenLulusTdkLulus');
     Route::get('/api/trendusulanserdos', 'API\\ApiController@getTrendUsulanSerdos');
-    Route::get('/api/trendsertdosen', 'API\\ApiController@getTrendSertDosen');
+    // Route::get('/api/trendpak', 'API\\ApiController@getTrendPAK');
 });
