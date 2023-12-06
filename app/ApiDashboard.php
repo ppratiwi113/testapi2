@@ -7,27 +7,103 @@ use Illuminate\Support\Facades\DB;
 
 class ApiDashboard extends Model
 {
-    public function getJumlahDosen() //diganti tahunnya
+    public function getLastUpdate()
     {
         $data = DB::select
         ("
-        SELECT tsdm.id_stat_aktif, COUNT(tsdm.id_sdm) AS total, MAX(tsdm.last_update) AS last_update
-        FROM pdrd.sdm tsdm
-        LEFT JOIN pdrd.reg_ptk treg ON treg.id_sdm = tsdm.id_sdm AND treg.soft_delete = 0
-        LEFT JOIN pdrd.keaktifan_ptk tkeaktifan ON tkeaktifan.id_reg_ptk = treg.id_reg_ptk AND tkeaktifan.soft_delete = 0
-        LEFT JOIN pdrd.satuan_pendidikan tsp ON tsp.id_sp = treg.id_sp AND tsp.soft_delete = 0
-        LEFT JOIN pdrd.sms tsms ON tsms.id_sms = treg.id_sms AND tsms.soft_delete = 0
-        WHERE tkeaktifan.id_thn_ajaran = EXTRACT(YEAR FROM CURRENT_DATE) -- Menggunakan tahun sekarang
-        AND tkeaktifan.a_sp_homebase = 1
-        AND tsdm.soft_delete = 0
-        AND tsdm.id_jns_sdm = 12
-        AND tsp.stat_sp = 'A'
-        AND tsms.id_jns_sms = 3
-        AND LEFT(tsp.id_wil, 2) <> '99'
-        AND tsdm.id_stat_aktif IN ('1')
-        AND treg.id_jns_keluar IS NULL
-        GROUP BY tkeaktifan.id_thn_ajaran, tsdm.id_stat_aktif;
+                SELECT MAX(last_update) AS latest_last_update
+        FROM (
+            SELECT last_update FROM pdrd.reg_ptk
+            UNION
+            SELECT last_update FROM pdrd.keaktifan_ptk
+            UNION
+            SELECT last_update FROM pdrd.satuan_pendidikan
+            UNION
+            SELECT last_update FROM pdrd.sms
+            UNION
+            SELECT last_update FROM pdrd.rwy_fungsional
+            UNION
+            SELECT last_update FROM pdrd.rwy_pend_formal
+            UNION
+            SELECT last_update FROM pdrd.rwy_sertifikasi
+            UNION
+            SELECT last_update FROM sdid.reg_serdos
+            UNION
+            SELECT last_update FROM sdid.lulus_serdos
+            UNION
+            SELECT last_update FROM sdid.serdik
+            UNION
+            SELECT last_update FROM sdid.usul_serdos_d1
+        ) AS all_tables;
+        ");
 
+        return $data;
+    }
+    public function getJumlahDosen() 
+    {
+        $data = DB::select
+        ("
+            SELECT
+            COALESCE(tahun_ini.id_stat_aktif, tahun_sebelumnya.id_stat_aktif) AS id_stat_aktif,
+            COALESCE(tahun_ini.total, 0) AS total_dosen_tahun_ini,
+            COALESCE(tahun_ini.last_update, tahun_sebelumnya.last_update) AS last_update,
+            COALESCE(tahun_ini.total, 0) - COALESCE(tahun_sebelumnya.total, 0) AS peningkatan_dari_tahun_lalu
+        FROM (
+            SELECT
+                tsdm.id_stat_aktif,
+                COUNT(tsdm.id_sdm) AS total,
+                MAX(tsdm.last_update) AS last_update
+            FROM
+                pdrd.sdm tsdm
+            LEFT JOIN
+                pdrd.reg_ptk treg ON treg.id_sdm = tsdm.id_sdm AND treg.soft_delete = 0
+            LEFT JOIN
+                pdrd.keaktifan_ptk tkeaktifan ON tkeaktifan.id_reg_ptk = treg.id_reg_ptk AND tkeaktifan.soft_delete = 0
+            LEFT JOIN
+                pdrd.satuan_pendidikan tsp ON tsp.id_sp = treg.id_sp AND tsp.soft_delete = 0
+            LEFT JOIN
+                pdrd.sms tsms ON tsms.id_sms = treg.id_sms AND tsms.soft_delete = 0
+            WHERE
+                tkeaktifan.id_thn_ajaran = EXTRACT(YEAR FROM CURRENT_DATE) -- Menggunakan tahun sekarang
+                AND tkeaktifan.a_sp_homebase = 1
+                AND tsdm.soft_delete = 0
+                AND tsdm.id_jns_sdm = 12
+                AND tsp.stat_sp = 'A'
+                AND tsms.id_jns_sms = 3
+                AND LEFT(tsp.id_wil, 2) <> '99'
+                AND tsdm.id_stat_aktif IN ('1')
+                AND treg.id_jns_keluar IS NULL
+            GROUP BY
+                tkeaktifan.id_thn_ajaran, tsdm.id_stat_aktif
+        ) AS tahun_ini
+        LEFT JOIN (
+            SELECT
+                tsdm.id_stat_aktif,
+                COUNT(tsdm.id_sdm) AS total,
+                MAX(tsdm.last_update) AS last_update
+            FROM
+                pdrd.sdm tsdm
+            LEFT JOIN
+                pdrd.reg_ptk treg ON treg.id_sdm = tsdm.id_sdm AND treg.soft_delete = 0
+            LEFT JOIN
+                pdrd.keaktifan_ptk tkeaktifan ON tkeaktifan.id_reg_ptk = treg.id_reg_ptk AND tkeaktifan.soft_delete = 0
+            LEFT JOIN
+                pdrd.satuan_pendidikan tsp ON tsp.id_sp = treg.id_sp AND tsp.soft_delete = 0
+            LEFT JOIN
+                pdrd.sms tsms ON tsms.id_sms = treg.id_sms AND tsms.soft_delete = 0
+            WHERE
+                tkeaktifan.id_thn_ajaran = EXTRACT(YEAR FROM CURRENT_DATE) - 1 -- Tahun sebelumnya
+                AND tkeaktifan.a_sp_homebase = 1
+                AND tsdm.soft_delete = 0
+                AND tsdm.id_jns_sdm = 12
+                AND tsp.stat_sp = 'A'
+                AND tsms.id_jns_sms = 3
+                AND LEFT(tsp.id_wil, 2) <> '99'
+                AND tsdm.id_stat_aktif IN ('1')
+                AND treg.id_jns_keluar IS NULL
+            GROUP BY
+                tkeaktifan.id_thn_ajaran, tsdm.id_stat_aktif
+        ) AS tahun_sebelumnya ON tahun_ini.id_stat_aktif = tahun_sebelumnya.id_stat_aktif;    
         ");
 
         return $data;

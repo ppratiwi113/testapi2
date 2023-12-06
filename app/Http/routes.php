@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 //login token statis
 Route::post ('login', 'Auth\\AuthController@login');
 Route::group(['middleware' => 'jwt-auth'], function(){
+    Route::get('/api/last-update', 'API\\ApiController@getLastUpdate');
     Route::get('/api/jumlah-dosen', 'API\\ApiController@getJumlahDosen');
     Route::get('/api/jumlah-tendik', 'API\\ApiController@getJumlahTendik');
     Route::get('/api/jabfungdosen', 'API\\ApiController@getJabfungDosen');
