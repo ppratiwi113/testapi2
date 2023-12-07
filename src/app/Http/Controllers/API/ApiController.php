@@ -20,6 +20,14 @@ class ApiController extends Controller
         return response()->json($result);
     }
 
+    public function getLastUpdate()
+    {
+        $model = new ApiDashboard();
+        $result = $model->getLastUpdate();
+
+        return response()->json($result);
+    }
+
     public function getJumlahTendik()
     {
         $model = new ApiDashboard();
