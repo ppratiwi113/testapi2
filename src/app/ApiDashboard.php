@@ -312,7 +312,7 @@ class ApiDashboard extends Model
             pdrd.sdm AS ps ON prs.id_sdm = ps.id_sdm AND ps.soft_delete = 0
         WHERE 
             prs.id_jns_sert IN (1, 2, 4)
-            AND prs.thn_sert = 2023 
+            AND prs.thn_sert = EXTRACT(YEAR FROM CURRENT_DATE)
             AND prs.soft_delete = 0
             AND LEFT(ps.nidn, 2) BETWEEN '00' AND '99'
         GROUP BY 
@@ -338,7 +338,7 @@ class ApiDashboard extends Model
         FROM pdrd.rwy_sertifikasi AS prs
         JOIN sdid.reg_serdos AS sr ON sr.id_sdm = prs.id_sdm
         JOIN sdid.lulus_serdos AS sls ON sls.id_usul_dys = sr.id_usul_dys
-        WHERE prs.thn_sert = 2023
+        WHERE prs.thn_sert = EXTRACT(YEAR FROM CURRENT_DATE)
             AND prs.id_jns_sert IN (1, 2, 4)
             AND prs.soft_delete = 0
         GROUP BY simpulan_akhir;
@@ -372,7 +372,7 @@ class ApiDashboard extends Model
         LEFT JOIN pdrd.keaktifan_ptk tkeaktifan ON tkeaktifan.id_reg_ptk = treg.id_reg_ptk AND tkeaktifan.soft_delete = 0
         LEFT JOIN pdrd.satuan_pendidikan tsp ON tsp.id_sp = treg.id_sp AND tsp.soft_delete = 0
         LEFT JOIN pdrd.sms tsms ON tsms.id_sms = treg.id_sms AND tsms.soft_delete = 0
-        WHERE tkeaktifan.id_thn_ajaran = 2023
+        WHERE tkeaktifan.id_thn_ajaran = EXTRACT(YEAR FROM CURRENT_DATE)
         AND tkeaktifan.a_sp_homebase = 1
         AND tsdm.soft_delete = 0
         AND tsdm.id_jns_sdm = 12
@@ -798,7 +798,7 @@ class ApiDashboard extends Model
         LEFT JOIN pdrd.keaktifan_ptk pkp ON pkp.id_reg_ptk = lreg.id_reg_ptk
         LEFT JOIN ref.status_kepegawaian rsk ON lreg.id_stat_pegawai = rsk.id_stat_pegawai
         LEFT JOIN pdrd.sms tsms ON tsms.id_sms = lreg.id_sms AND tsms.soft_delete = 0
-        WHERE pkp.id_thn_ajaran = 2023
+        WHERE pkp.id_thn_ajaran = EXTRACT(YEAR FROM CURRENT_DATE)
         AND tsdm.soft_delete = 0
         AND tsdm.id_jns_sdm = 12
         AND tsp.stat_sp = 'A'
@@ -836,7 +836,7 @@ class ApiDashboard extends Model
         LEFT JOIN pdrd.keaktifan_ptk pkp ON pkp.id_reg_ptk = lreg.id_reg_ptk
         LEFT JOIN ref.status_kepegawaian rsk ON lreg.id_stat_pegawai = rsk.id_stat_pegawai
         LEFT JOIN pdrd.sms tsms ON tsms.id_sms = lreg.id_sms AND tsms.soft_delete = 0
-        WHERE pkp.id_thn_ajaran = 2023
+        WHERE pkp.id_thn_ajaran = EXTRACT(YEAR FROM CURRENT_DATE)
         AND tsdm.soft_delete = 0
         AND tsdm.id_jns_sdm = 13
         AND tsp.stat_sp = 'A'
@@ -856,22 +856,22 @@ class ApiDashboard extends Model
         $data= DB::select
         ("
         SELECT 'bkd_ajar' AS tabel, COUNT(*) AS jumlah FROM sdid.klaim_bkd_ajar
-        WHERE EXTRACT(YEAR FROM last_update) = 2023
+        WHERE EXTRACT(YEAR FROM last_update) = EXTRACT(YEAR FROM CURRENT_DATE)
         UNION
         SELECT 'bkd_didik' AS tabel, COUNT(*) AS jumlah FROM sdid.klaim_bkd_didik
-        WHERE EXTRACT(YEAR FROM last_update) = 2023
+        WHERE EXTRACT(YEAR FROM last_update) = EXTRACT(YEAR FROM CURRENT_DATE)
         UNION
         SELECT 'bkd_lit' AS tabel, COUNT(*) AS jumlah FROM sdid.klaim_bkd_lit
-        WHERE EXTRACT(YEAR FROM last_update) = 2023
+        WHERE EXTRACT(YEAR FROM last_update) = EXTRACT(YEAR FROM CURRENT_DATE)
         UNION
         SELECT 'bkd_pengmas' AS tabel, COUNT(*) AS jumlah FROM sdid.klaim_bkd_pengmas
-        WHERE EXTRACT(YEAR FROM last_update) = 2023
+        WHERE EXTRACT(YEAR FROM last_update) = EXTRACT(YEAR FROM CURRENT_DATE)
         UNION
         SELECT 'bkd_tunjang' AS tabel, COUNT(*) AS jumlah FROM sdid.klaim_bkd_tunjang
-        WHERE EXTRACT(YEAR FROM last_update) = 2023
+        WHERE EXTRACT(YEAR FROM last_update) = EXTRACT(YEAR FROM CURRENT_DATE)
         UNION
         SELECT 'wajib_prof' AS tabel, COUNT(*) AS jumlah FROM sdid.klaim_wajib_prof
-        WHERE EXTRACT(YEAR FROM last_update) = 2023;
+        WHERE EXTRACT(YEAR FROM last_update) = EXTRACT(YEAR FROM CURRENT_DATE);
         ");
         
         return $data;
@@ -921,7 +921,7 @@ class ApiDashboard extends Model
             AND LEFT(tsp.id_wil,2) <> '99'
             AND tsdm.id_stat_aktif IN('1','20','24','25','27')
             AND treg.id_jns_keluar IS NULL
-            AND tkeaktifan.id_thn_ajaran BETWEEN 2020 AND 2023
+            AND tkeaktifan.id_thn_ajaran BETWEEN (date_part('year', now())-3) and date_part('year', now())
         GROUP BY nm_thn_ajaran
         ORDER BY nm_thn_ajaran;
         ");
@@ -950,7 +950,7 @@ class ApiDashboard extends Model
             AND LEFT(tsp.id_wil,2) <> '99'
             AND tsdm.id_stat_aktif IN('1','20','24','25','27')
             AND treg.id_jns_keluar IS NULL
-            AND tkeaktifan.id_thn_ajaran BETWEEN 2020 AND 2023
+            AND tkeaktifan.id_thn_ajaran BETWEEN (date_part('year', now())-3) and date_part('year', now())
         GROUP BY nm_thn_ajaran
         ORDER BY nm_thn_ajaran;
         ");
@@ -981,7 +981,7 @@ class ApiDashboard extends Model
         LEFT JOIN pdrd.keaktifan_ptk pkp ON pkp.id_reg_ptk = lreg.id_reg_ptk
         LEFT JOIN ref.bentuk_pendidikan rbp ON tsp.id_bp = rbp.id_bp
         LEFT JOIN pdrd.sms tsms ON tsms.id_sms = lreg.id_sms AND tsms.soft_delete = 0
-        WHERE pkp.id_thn_ajaran BETWEEN 2020 AND 2023
+        WHERE pkp.id_thn_ajaran BETWEEN (date_part('year', now())-3) and date_part('year', now())
             AND tsdm.soft_delete = 0
             AND tsdm.id_jns_sdm = 12
             AND tsp.stat_sp = 'A'
@@ -1010,7 +1010,7 @@ class ApiDashboard extends Model
         FROM pdrd.rwy_sertifikasi prs
         JOIN pdrd.sdm ps ON prs.id_sdm = ps.id_sdm AND ps.soft_delete = 0
         WHERE prs.id_jns_sert IN (1, 2, 4)
-            AND prs.thn_sert BETWEEN 2020 AND 2023
+            AND prs.thn_sert BETWEEN (date_part('year', now())-3) and date_part('year', now())
             AND prs.soft_delete = 0
             AND LEFT(ps.nidn, 2) BETWEEN '00' AND '99'
         GROUP BY 
@@ -1039,7 +1039,7 @@ class ApiDashboard extends Model
         FROM pdrd.rwy_sertifikasi prs
         JOIN sdid.reg_serdos sr ON sr.id_sdm = prs.id_sdm AND sr.soft_delete = 0
         JOIN sdid.lulus_serdos sls ON sls.id_usul_dys = sr.id_usul_dys AND sls.soft_delete = 0
-        WHERE prs.thn_sert BETWEEN 2020 AND 2023
+        WHERE prs.thn_sert BETWEEN (date_part('year', now())-3) and date_part('year', now())
         AND prs.soft_delete = 0
         AND prs.id_jns_sert IN (1,2,4)
         GROUP BY 
@@ -1085,10 +1085,10 @@ class ApiDashboard extends Model
         $data = DB::select
         ("
         SELECT 
-            CASE WHEN rsk.nm_stat_pegawai = 'PNS' THEN 'PNS' ELSE 'NON PNS' END AS status_pegawai,
-            pkp.id_thn_ajaran,
-            COUNT(DISTINCT tsdm.id_sdm) AS value
-        FROM pdrd.sdm tsdm
+            pkp.id_thn_ajaran AS tahun,
+            COUNT(DISTINCT CASE WHEN rsk.nm_stat_pegawai = 'PNS' THEN tsdm.id_sdm END) AS value_pns,
+            COUNT(DISTINCT CASE WHEN rsk.nm_stat_pegawai <> 'PNS' THEN tsdm.id_sdm END) AS value_non_pns
+        FROM pdrd.sdm AS tsdm
         LEFT JOIN (
             SELECT
                 treg.id_sdm,
@@ -1099,13 +1099,13 @@ class ApiDashboard extends Model
                 treg.id_stat_pegawai,
                 treg.id_ikatan_kerja,
                 ROW_NUMBER() OVER(PARTITION BY treg.id_sdm ORDER BY treg.last_update DESC) AS rn
-            FROM pdrd.reg_ptk treg
-        ) lreg ON tsdm.id_sdm = lreg.id_sdm AND lreg.rn = 1
-        LEFT JOIN pdrd.satuan_pendidikan tsp ON tsp.id_sp = lreg.id_sp
-        LEFT JOIN pdrd.keaktifan_ptk pkp ON pkp.id_reg_ptk = lreg.id_reg_ptk
-        LEFT JOIN ref.status_kepegawaian rsk ON lreg.id_stat_pegawai = rsk.id_stat_pegawai
+            FROM pdrd.reg_ptk AS treg
+        ) AS lreg ON tsdm.id_sdm = lreg.id_sdm AND lreg.rn = 1
+        LEFT JOIN pdrd.satuan_pendidikan AS tsp ON tsp.id_sp = lreg.id_sp
+        LEFT JOIN pdrd.keaktifan_ptk AS pkp ON pkp.id_reg_ptk = lreg.id_reg_ptk
+        LEFT JOIN ref.status_kepegawaian AS rsk ON lreg.id_stat_pegawai = rsk.id_stat_pegawai
         LEFT JOIN pdrd.sms tsms ON tsms.id_sms = lreg.id_sms AND tsms.soft_delete = 0
-        WHERE pkp.id_thn_ajaran BETWEEN 2020 AND 2023
+        WHERE pkp.id_thn_ajaran BETWEEN (date_part('year', now())-3) and date_part('year', now())
         AND tsdm.soft_delete = 0
         AND tsdm.id_jns_sdm = 12
         AND tsp.stat_sp = 'A'
@@ -1113,8 +1113,9 @@ class ApiDashboard extends Model
         AND LEFT(tsp.id_wil,2) <> '99'
         AND tsdm.id_stat_aktif IN ('1','20','24','25','27')
         AND lreg.id_jns_keluar IS NULL
-        GROUP BY CASE WHEN rsk.nm_stat_pegawai = 'PNS' THEN 'PNS' ELSE 'NON PNS' END, pkp.id_thn_ajaran
-        ORDER BY status_pegawai, pkp.id_thn_ajaran;
+        GROUP BY pkp.id_thn_ajaran
+        ORDER BY pkp.id_thn_ajaran;
+
 
         ");
 
