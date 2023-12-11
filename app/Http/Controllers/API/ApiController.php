@@ -153,10 +153,34 @@ class ApiController extends Controller
         return response()->json($result);
     }
 
-    public function getStatKepegawaian()
+    public function getStatKepegawaianDosen()
     {
         $model = new ApiDashboard();
-        $result = $model->getStatKepegawaian();
+        $result = $model->getStatKepegawaianDosen();
+       
+        return response()->json($result);
+    }
+
+    public function getStatKepegawaianTendik()
+    {
+        $model = new ApiDashboard();
+        $result = $model->getStatKepegawaianTendik();
+       
+        return response()->json($result);
+    }
+
+    public function getBKDJenis()
+    {
+        $model = new ApiDashboard();
+        $result = $model->getBKDJenis();
+       
+        return response()->json($result);
+    }
+
+    public function getAjuanPerubahDataDosen()
+    {
+        $model = new ApiDashboard();
+        $result = $model->getAjuanPerubahDataDosen();
        
         return response()->json($result);
     }
@@ -201,6 +225,13 @@ class ApiController extends Controller
     {
         $model = new ApiDashboard();
         $result = $model->getTrendUsulanSerdos();
+       
+        return response()->json($result);
+    }
+    public function getTrendStatKepegawaian() //2020-2023
+    {
+        $model = new ApiDashboard();
+        $result = $model->getTrendStatKepegawaian();
        
         return response()->json($result);
     }
