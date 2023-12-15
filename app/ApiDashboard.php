@@ -9,8 +9,7 @@ class ApiDashboard extends Model
 {
     public function getLastUpdate()
     {
-        $data = DB::select
-        ("
+        $data = DB::select("
                 SELECT MAX(last_update) AS latest_last_update
         FROM (
             SELECT last_update FROM pdrd.reg_ptk
@@ -39,10 +38,9 @@ class ApiDashboard extends Model
 
         return $data;
     }
-    public function getJumlahDosen() 
+    public function getJumlahDosen()
     {
-        $data = DB::select
-        ("
+        $data = DB::select("
             SELECT
             COALESCE(tahun_ini.id_stat_aktif, tahun_sebelumnya.id_stat_aktif) AS id_stat_aktif,
             COALESCE(tahun_ini.total, 0) AS total_dosen_tahun_ini,
@@ -111,8 +109,7 @@ class ApiDashboard extends Model
 
     public function getJumlahTendik() //diganti tahunnya
     {
-        $data = DB::select
-        ("
+        $data = DB::select("
         SELECT
             COALESCE(tahun_ini.total, 0) AS total_tendik_tahun_ini,
             COALESCE(tahun_ini.total, 0) - COALESCE(tahun_sebelumnya.total, 0) AS peningkatan_dari_tahun_lalu
@@ -169,8 +166,7 @@ class ApiDashboard extends Model
 
     public function getJabfungDosen()
     {
-        $data = DB::select
-        ("
+        $data = DB::select("
         SELECT
         CASE
             WHEN rjabfung.nm_jabfung IN ('Asisten Ahli', 'Lektor', 'Lektor Kepala', 'Profesor') THEN rjabfung.nm_jabfung
@@ -210,10 +206,9 @@ class ApiDashboard extends Model
         return $data;
     }
 
-    public function getJaPenDosen()//masih error query
+    public function getJaPenDosen() //masih error query
     {
-        $data = DB::select
-        ("
+        $data = DB::select("
         SELECT
             CASE
                 WHEN rjd.nm_jenj_didik IN ('D1', 'D2', 'D3', 'D4', 'Informal', 'Lainnya', 'Non formal',
@@ -257,10 +252,9 @@ class ApiDashboard extends Model
         return $data;
     }
 
-    public function getJaPenTendik()//masih error di query
+    public function getJaPenTendik() //masih error di query
     {
-        $data = DB::select
-        ("
+        $data = DB::select("
         SELECT
             CASE
                 WHEN rjd.nm_jenj_didik IN ('D1', 'D2', 'D3', 'D4', 'Informal', 'Lainnya', 'Non formal', 'Profesi', 'S1',
@@ -297,8 +291,7 @@ class ApiDashboard extends Model
 
     public function getJumSerDosen() //diganti tahunnya
     {
-        $data = DB::select
-        ("
+        $data = DB::select("
         SELECT 
             CASE 
                 WHEN LEFT(ps.nidn, 2) BETWEEN '00' AND '87' THEN 'NIDN'
@@ -327,8 +320,7 @@ class ApiDashboard extends Model
 
     public function getJumSerLulusTdkLulus()
     {
-        $data = DB::select
-        ("
+        $data = DB::select("
         SELECT
             CASE
                 WHEN sls.simpulan_akhir = 'L' THEN 'Lulus'
@@ -350,8 +342,7 @@ class ApiDashboard extends Model
 
     public function getUsiaJekelDosen()
     {
-        $data = DB::select
-        ("
+        $data = DB::select("
                 SELECT
         kelompok_usia AS usia,
             SUM(CAST(CASE WHEN jenis_kelamin = 'L' THEN jml_dosen ELSE 0 END AS INT)) AS value_lk,
@@ -403,8 +394,7 @@ class ApiDashboard extends Model
 
     public function getIkatanKerjaDosen()
     {
-        $data = DB::select
-        ("
+        $data = DB::select("
                 SELECT
             CASE
                 WHEN rik.nm_ikatan_kerja IN ('Dokter Pendidik Klinis', 'Dosen dengan Perjanjian Kerja', 'Dosen PNS DPK', 'Dosen Tetap', 'Dosen Tetap BH',
@@ -445,8 +435,7 @@ class ApiDashboard extends Model
 
     public function getJumGolonganDosen()
     {
-        $data = DB::select
-        ("
+        $data = DB::select("
         SELECT
             CASE
                 WHEN rpg.kode_gol IN ('I/a', 'I/b', 'I/c', 'I/d', 'II/a', 'II/b', 'II/c', 'II/d', 'III/a', 'III/b', 'III/c',
@@ -480,11 +469,10 @@ class ApiDashboard extends Model
 
         return $data;
     }
-    
+
     public function getBentukPendDosen()
     {
-        $data = DB::select
-        ("
+        $data = DB::select("
         SELECT rbp.nm_bp AS name, COUNT(DISTINCT tsdm.id_sdm) AS value
         FROM pdrd.sdm tsdm
         LEFT JOIN (
@@ -518,8 +506,7 @@ class ApiDashboard extends Model
 
     public function getBentukPendTendik()
     {
-        $data = DB::select
-        ("
+        $data = DB::select("
         SELECT rbp.nm_bp AS name, COUNT(DISTINCT tsdm.id_sdm) AS value
         FROM pdrd.sdm tsdm
         LEFT JOIN (
@@ -551,8 +538,7 @@ class ApiDashboard extends Model
 
     public function getJumPangkatDosen()
     {
-        $data = DB::select
-        ("
+        $data = DB::select("
         SELECT
             CASE
                 WHEN rpg.nm_pangkat IN (
@@ -632,8 +618,7 @@ class ApiDashboard extends Model
 
     public function getJumPangkatTendik()
     {
-        $data = DB::select
-        ("
+        $data = DB::select("
         SELECT
             CASE
                 WHEN rpg.nm_pangkat IN (
@@ -673,8 +658,7 @@ class ApiDashboard extends Model
 
     public function getJumPangDosenperAhli()
     {
-        $data = DB::select
-        ("
+        $data = DB::select("
         SELECT
             CASE
                 WHEN rpg.kode_gol IN ('IV/d', 'IV/e') THEN 'Ahli Utama'
@@ -738,8 +722,7 @@ class ApiDashboard extends Model
 
     public function getJumPTAktifPerProv()
     {
-        $data = DB::select
-        ("
+        $data = DB::select("
         SELECT 
             LEFT(psp.id_wil, 2) || '0000' AS kode_wilayah,
             rw.nm_wil AS provinsi,
@@ -758,8 +741,7 @@ class ApiDashboard extends Model
 
     public function getJumPTAktifperBentPend()
     {
-        $data = DB::select
-        ("
+        $data = DB::select("
         SELECT
             rbp.nm_bp AS bentuk_pendidikan,
             COUNT(DISTINCT psp.id_sp) AS jml_pt
@@ -776,8 +758,7 @@ class ApiDashboard extends Model
 
     public function getStatKepegawaianDosen()
     {
-        $data = DB::select
-        ("
+        $data = DB::select("
         SELECT 
             CASE WHEN rsk.nm_stat_pegawai = 'PNS' THEN 'PNS' ELSE 'NON PNS' END AS status_pegawai,
             COUNT(DISTINCT tsdm.id_sdm) AS value
@@ -814,8 +795,7 @@ class ApiDashboard extends Model
 
     public function getStatKepegawaianTendik()
     {
-        $data = DB::select
-        ("
+        $data = DB::select("
         SELECT 
             CASE WHEN rsk.nm_stat_pegawai = 'PNS' THEN 'PNS' ELSE 'NON PNS' END AS status_pegawai,
             COUNT(DISTINCT tsdm.id_sdm) AS value
@@ -853,35 +833,32 @@ class ApiDashboard extends Model
 
     public function getBKDJenis()
     {
-        $data= DB::select
-        ("
-        SELECT 'bkd_ajar' AS tabel, COUNT(*) AS jumlah FROM sdid.klaim_bkd_ajar
+        $data = DB::select("
+        SELECT 'Ajar' AS tabel, COUNT(*) AS jumlah FROM sdid.klaim_bkd_ajar
         WHERE EXTRACT(YEAR FROM last_update) = EXTRACT(YEAR FROM CURRENT_DATE)
         UNION
-        SELECT 'bkd_didik' AS tabel, COUNT(*) AS jumlah FROM sdid.klaim_bkd_didik
+        SELECT 'Didik' AS tabel, COUNT(*) AS jumlah FROM sdid.klaim_bkd_didik
         WHERE EXTRACT(YEAR FROM last_update) = EXTRACT(YEAR FROM CURRENT_DATE)
         UNION
-        SELECT 'bkd_lit' AS tabel, COUNT(*) AS jumlah FROM sdid.klaim_bkd_lit
+        SELECT 'Penelitian' AS tabel, COUNT(*) AS jumlah FROM sdid.klaim_bkd_lit
         WHERE EXTRACT(YEAR FROM last_update) = EXTRACT(YEAR FROM CURRENT_DATE)
         UNION
-        SELECT 'bkd_pengmas' AS tabel, COUNT(*) AS jumlah FROM sdid.klaim_bkd_pengmas
+        SELECT 'Pengmas' AS tabel, COUNT(*) AS jumlah FROM sdid.klaim_bkd_pengmas
         WHERE EXTRACT(YEAR FROM last_update) = EXTRACT(YEAR FROM CURRENT_DATE)
         UNION
-        SELECT 'bkd_tunjang' AS tabel, COUNT(*) AS jumlah FROM sdid.klaim_bkd_tunjang
+        SELECT 'Penunjang' AS tabel, COUNT(*) AS jumlah FROM sdid.klaim_bkd_tunjang
         WHERE EXTRACT(YEAR FROM last_update) = EXTRACT(YEAR FROM CURRENT_DATE)
         UNION
-        SELECT 'wajib_prof' AS tabel, COUNT(*) AS jumlah FROM sdid.klaim_wajib_prof
+        SELECT 'Wajib Prof' AS tabel, COUNT(*) AS jumlah FROM sdid.klaim_wajib_prof
         WHERE EXTRACT(YEAR FROM last_update) = EXTRACT(YEAR FROM CURRENT_DATE);
         ");
-        
+
         return $data;
-        
     }
 
     public function getAjuanPerubahDataDosen()
     {
-        $data = DB::select
-        ("
+        $data = DB::select("
         SELECT 'pdd_didik' AS tabel, COUNT(*) AS jumlah FROM sdid.ajuan_pdd_didik
         UNION ALL
         SELECT 'pdd_pokok' AS tabel, COUNT(*) AS jumlah FROM sdid.ajuan_pdd_pokok
@@ -897,13 +874,12 @@ class ApiDashboard extends Model
         return $data;
     }
 
-    
+
     //Trend
 
     public function getTrendJumDosen()
     {
-        $data = DB::select
-        ("
+        $data = DB::select("
         SELECT
             nm_thn_ajaran,
             COUNT(DISTINCT tsdm.id_sdm) AS jml_dosen
@@ -931,8 +907,7 @@ class ApiDashboard extends Model
 
     public function getTrendJumTendik()
     {
-        $data = DB::select
-        ("
+        $data = DB::select("
         SELECT
             nm_thn_ajaran,
             COUNT(DISTINCT tsdm.id_sdm) AS jml_tendik
@@ -960,8 +935,7 @@ class ApiDashboard extends Model
 
     public function getTrendBentukPend()
     {
-        $data = DB::select
-        ("
+        $data = DB::select("
         SELECT
             rbp.nm_bp AS name,
             pkp.id_thn_ajaran,
@@ -998,28 +972,19 @@ class ApiDashboard extends Model
 
     public function getTrendSertDosen() //NIDN-NIDK
     {
-        $data = DB::select
-        ("
+        $data = DB::select("
         SELECT 
-            CASE 
-                WHEN LEFT(ps.nidn, 2) BETWEEN '00' AND '87' THEN 'NIDN'
-                WHEN LEFT(ps.nidn, 2) BETWEEN '88' AND '99' THEN 'NIDK'
-            END AS nidn_group,
-            prs.thn_sert,
-            COUNT(*) AS jumlah_sert
-        FROM pdrd.rwy_sertifikasi prs
-        JOIN pdrd.sdm ps ON prs.id_sdm = ps.id_sdm AND ps.soft_delete = 0
-        WHERE prs.id_jns_sert IN (1, 2, 4)
-            AND prs.thn_sert BETWEEN (date_part('year', now())-3) and date_part('year', now())
-            AND prs.soft_delete = 0
-            AND LEFT(ps.nidn, 2) BETWEEN '00' AND '99'
-        GROUP BY 
-            CASE 
-                WHEN LEFT(ps.nidn, 2) BETWEEN '00' AND '87' THEN 'NIDN'
-                WHEN LEFT(ps.nidn, 2) BETWEEN '88' AND '99' THEN 'NIDK'
-            END,
-            prs.thn_sert
-        ORDER BY prs.thn_sert, nidn_group DESC;
+    prs.thn_sert AS tahun,
+    COUNT(DISTINCT CASE WHEN LEFT(ps.nidn, 2) BETWEEN '00' AND '87' THEN prs.id_sdm END) AS value_nidn,
+    COUNT(DISTINCT CASE WHEN LEFT(ps.nidn, 2) BETWEEN '88' AND '99' THEN prs.id_sdm END) AS value_nidk
+FROM pdrd.rwy_sertifikasi AS prs
+JOIN pdrd.sdm AS ps ON prs.id_sdm = ps.id_sdm AND ps.soft_delete = 0
+WHERE prs.id_jns_sert IN (1, 2, 4)
+AND prs.thn_sert BETWEEN 2020 AND 2023
+AND prs.soft_delete = 0
+AND LEFT(ps.nidn, 2) BETWEEN '00' AND '99'
+GROUP BY prs.thn_sert
+ORDER BY prs.thn_sert;
         ");
 
         return $data;
@@ -1027,8 +992,7 @@ class ApiDashboard extends Model
 
     public function getTrendSertDosenLulusTdkLulus() //2020-2023(Sekarang)
     {
-        $data = DB::select
-        ("
+        $data = DB::select("
         SELECT
             prs.thn_sert,
          CASE
@@ -1056,8 +1020,7 @@ class ApiDashboard extends Model
 
     public function getTrendUsulanSerdos() //2020-2023
     {
-        $data = DB::select
-        ("
+        $data = DB::select("
         select 
             CAST(a.tahun_sert AS VARCHAR) AS tahun_sert,
             SUM(CAST(a.tidak_diajukan AS INT)) AS tidak_diajukan,
@@ -1082,8 +1045,7 @@ class ApiDashboard extends Model
 
     public function getTrendStatKepegawaian()
     {
-        $data = DB::select
-        ("
+        $data = DB::select("
         SELECT 
             pkp.id_thn_ajaran AS tahun,
             COUNT(DISTINCT CASE WHEN rsk.nm_stat_pegawai = 'PNS' THEN tsdm.id_sdm END) AS value_pns,
@@ -1121,7 +1083,7 @@ class ApiDashboard extends Model
 
         return $data;
     }
-    
+
 
     // public function getTrendPAKDosen() //2020-2023(Sekarang)
     // {
@@ -1131,5 +1093,5 @@ class ApiDashboard extends Model
 
     //     return $data;
     // }
-    
+
 }
