@@ -28,6 +28,7 @@ Route::group(['middleware' => 'jwt-auth'], function(){
     Route::get('/api/statkepegawaian-tendik', 'API\\ApiController@getStatKepegawaianTendik');
     Route::get('/api/bkdjenis', 'API\\ApiController@getBKDJenis');
     Route::get('/api/ajuan-perubahandata-dosen', 'API\\ApiController@getAjuanPerubahDataDosen');
+    Route::get('/api/laporanbkd', 'API\\ApiController@getLaporanBKD');
 
     //trend
     Route::get('/api/trendjmlhdosen', 'API\\ApiController@getTrendJumDosen');

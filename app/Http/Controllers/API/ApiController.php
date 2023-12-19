@@ -185,6 +185,14 @@ class ApiController extends Controller
         return response()->json($result);
     }
 
+    public function getLaporanBKD()
+    {
+        $model = new ApiDashboard();
+        $result =  $model->getLaporanBKD();
+
+        return response()->json($result);
+    }
+
     //Trend
     public function getTrendJumDosen()
     {
