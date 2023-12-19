@@ -1,0 +1,45 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+.box {
+  background-color: rgba(152, 183, 199, 0.3);
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.panel {
+  width: 100%;
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+}
+
+.header-title {
+  margin-left: 10px;
+}
+
+.content {
+  margin: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.content-value {
+  font-size: 40px;
+  font-style: normal;
+  font-weight: 700;
+}
+.content-percentage span {
+  color: rgba(26, 179, 148, 0.8);
+}
+
+.footer span {
+  color: rgba(54, 54, 54, 0.7);
+}
