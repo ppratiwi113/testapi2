@@ -859,7 +859,8 @@ class ApiDashboard extends Model
 
     public function getAjuanPerubahDataDosen()
     {
-        $data = DB::select("
+        $data = DB::select
+        ("
         SELECT 'pdd_didik' AS tabel, COUNT(*) AS jumlah FROM sdid.ajuan_pdd_didik
         UNION ALL
         SELECT 'pdd_pokok' AS tabel, COUNT(*) AS jumlah FROM sdid.ajuan_pdd_pokok
@@ -869,6 +870,51 @@ class ApiDashboard extends Model
         SELECT 'pdd_jabfung' AS tabel, COUNT(*) AS jumlah FROM sdid.ajuan_pdd_jabfung
         UNION ALL
         SELECT 'pdd_sertifikasi' AS tabel, COUNT(*) AS jumlah FROM sdid.ajuan_pdd_sertifikasi;
+
+        ");
+
+        return $data;
+    }
+
+    public function getLaporanBKD()
+    {
+        $data = DB::select
+        ("
+        SELECT 
+            rj.nm_jabfung, 
+            CASE
+                WHEN snab.simpulan_akhir = 'L' THEN 'Lulus'
+                WHEN snab.simpulan_akhir IN ('T', 'X') THEN 'Tidak Lulus'
+                ELSE 'Undefined'
+            END AS simpulan_akhir,
+            count(prf.id_sdm) as jumlah
+        FROM pdrd.sdm tsdm 
+        LEFT JOIN pdrd.reg_ptk treg ON treg.id_sdm = tsdm.id_sdm AND treg.soft_delete = 0
+        LEFT JOIN pdrd.keaktifan_ptk tkeaktifan ON tkeaktifan.id_reg_ptk = treg.id_reg_ptk AND tkeaktifan.soft_delete = 0
+        LEFT JOIN pdrd.satuan_pendidikan tsp ON tsp.id_sp = treg.id_sp AND tsp.soft_delete = 0
+        LEFT JOIN pdrd.sms tsms ON tsms.id_sms = treg.id_sms AND tsms.soft_delete = 0
+        LEFT JOIN sdid.nilai_bkd snb ON snb.id_reg_ptk = treg.id_reg_ptk AND snb.soft_delete = 0
+        LEFT JOIN sdid.nilai_asesor_bkd snab ON snab.id_nilai_bkd = snb.id_nilai_bkd AND snab.soft_delete = 0
+        LEFT JOIN pdrd.rwy_fungsional prf ON prf.id_rwy_jabfung = snb.id_rwy_jabfung AND prf.soft_delete = 0
+        LEFT JOIN ref.jabfung rj ON rj.id_jabfung = prf.id_jabfung
+        WHERE tkeaktifan.id_thn_ajaran = EXTRACT(YEAR FROM CURRENT_DATE)
+        AND tkeaktifan.a_sp_homebase = 1
+        AND tsdm.soft_delete = 0
+        AND tsdm.id_jns_sdm = 12
+        AND tsp.stat_sp = 'A'
+        AND tsms.id_jns_sms = 3
+        AND LEFT(tsp.id_wil, 2) <> '99'
+        AND tsdm.id_stat_aktif IN ('1','20','24','25','27')
+        AND treg.id_jns_keluar IS NULL
+        AND snab.simpulan_akhir IS NOT NULL
+        AND rj.nm_jabfung IS NOT NULL
+        GROUP BY 
+            rj.nm_jabfung, 
+            CASE
+                WHEN snab.simpulan_akhir = 'L' THEN 'Lulus'
+                WHEN snab.simpulan_akhir IN ('T', 'X') THEN 'Tidak Lulus'
+                ELSE 'Undefined'
+            END;
 
         ");
 
