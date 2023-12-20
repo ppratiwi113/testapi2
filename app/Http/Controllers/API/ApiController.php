@@ -3,9 +3,6 @@
 namespace App\Http\Controllers\API;
 
 use App\ApiDashboard;
-use Illuminate\Http\Request;
-
-use App\Http\Requests;
 use App\Http\Controllers\Controller;
 
 class ApiController extends Controller
@@ -20,6 +17,14 @@ class ApiController extends Controller
         $model = new ApiDashboard();
         $result = $model->getJumlahDosen();
         
+        return response()->json($result);
+    }
+
+    public function getLastUpdate()
+    {
+        $model = new ApiDashboard();
+        $result = $model->getLastUpdate();
+
         return response()->json($result);
     }
 
@@ -74,7 +79,7 @@ class ApiController extends Controller
     {
         $model = new ApiDashboard();
         $result = $model->getUsiaJekelDosen();
-       
+        
         return response()->json($result);
     }
     public function getIkatanKerjaDosen()
@@ -112,13 +117,13 @@ class ApiController extends Controller
        
         return response()->json($result);
     }
-    public function getJenjPendDosen()
-    {
-        $model = new ApiDashboard();
-        $result = $model->getJenjPendDosen();
+    // public function getJenjPendDosen()
+    // {
+    //     $model = new ApiDashboard();
+    //     $result = $model->getJenjPendDosen();
        
-        return response()->json($result);
-    }
+    //     return response()->json($result);
+    // }
     public function getJumPangkatTendik()
     {
         $model = new ApiDashboard();
@@ -144,6 +149,38 @@ class ApiController extends Controller
     {
         $model = new ApiDashboard();
         $result = $model->getJumPTAktifperBentPend();
+       
+        return response()->json($result);
+    }
+
+    public function getStatKepegawaianDosen()
+    {
+        $model = new ApiDashboard();
+        $result = $model->getStatKepegawaianDosen();
+       
+        return response()->json($result);
+    }
+
+    public function getStatKepegawaianTendik()
+    {
+        $model = new ApiDashboard();
+        $result = $model->getStatKepegawaianTendik();
+       
+        return response()->json($result);
+    }
+
+    public function getBKDJenis()
+    {
+        $model = new ApiDashboard();
+        $result = $model->getBKDJenis();
+       
+        return response()->json($result);
+    }
+
+    public function getAjuanPerubahDataDosen()
+    {
+        $model = new ApiDashboard();
+        $result = $model->getAjuanPerubahDataDosen();
        
         return response()->json($result);
     }
@@ -188,6 +225,13 @@ class ApiController extends Controller
     {
         $model = new ApiDashboard();
         $result = $model->getTrendUsulanSerdos();
+       
+        return response()->json($result);
+    }
+    public function getTrendStatKepegawaian() //2020-2023
+    {
+        $model = new ApiDashboard();
+        $result = $model->getTrendStatKepegawaian();
        
         return response()->json($result);
     }

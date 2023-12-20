@@ -2,89 +2,42 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\User;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Request;
-use Illuminate\Support\Facades\Response;
-use Illuminate\Foundation\Auth\ThrottlesLogins;
-use Illuminate\Foundation\Auth\AuthenticatesAndRegistersUsers;
-use Tymon\JWTAuth\Exceptions\JWTException;
-use Tymon\JWTAuth\Facades\JWTAuth;
-use Tymon\JWTAuth\JWTAuth as JWTAuthJWTAuth;
+use Illuminate\Http\Request;
+use Firebase\JWT\JWT;
+
 
 class AuthController extends Controller
 {
-    protected $response;
-    public function __construct()
+    public function login(Request $request)
     {
-        $this->middleware('guest', ['except' => 'getLogout']);
-        $this->response = new Response(); // Gunakan class Response
-    }
+        $providedUsername = $request->input('username');
+        $providedPassword = $request->input('password');
 
-    public function authenticate(Request $request) {
-        $credentials = $request->only('email','password');
-        $login = filter_var($request->input('username'), FILTER_VALIDATE_EMAIL)
-            ?'email' : 'phone';
-
-        try {
-            if($login=='email') {
-                $loginCredentials = ['email' => $credentials['username'],
-                    'password'=>$credentials['password']];
-            }
-            else {
-                $loginCredentials = ['phone'=>$credentials['username'],
-                    'password'=>$credentials['password']];
-            }
-
-            if(! $token = JWTAuth::attempt($loginCredentials)) {
-                return $this->response()->errorUnauthorized();
-            }
-        }catch (JWTException $ex){
-            return $this->response()->errorInternal();
+        if ($this->isValidCredentials($providedUsername, $providedPassword)) {
+            $token = $this->generateToken($providedUsername);
+            return response()->json(['token' => $token]);
+        } else {
+            return response()->json(['error' => 'Authentication failed'], 401);
         }
-
-        return response()->json(compact('token'))->setStatusCode(200);
     }
 
-    public function getAuthenticatedUser()
+    private function isValidCredentials($providedUsername, $providedPassword)
     {
-        try {
-            if (! $user = JWTAuth::parseToken()->toUser()){
-                return response()->json(['user not found'], 404);
-            }
-        }catch (JWTException $e) {
-            return $this->response()->errorInternal();
-        }
-        return $this->response()->item($user, new UserTransformer)->setStatusCode(200);
+        $username = 'user123';
+        $password = 'password123';
+
+        return $providedUsername === $username && $providedPassword === $password;
     }
 
-    /**
-    //  * Get a validator for an incoming registration request.
-    //  *
-    //  * @param  array  $data
-    //  * @return \Illuminate\Contracts\Validation\Validator
-    //  */
-    // protected function validator(array $data)
-    // {
-    //     return Validator::make($data, [
-    //         'name' => 'required|max:255',
-    //         'email' => 'required|email|max:255|unique:users',
-    //         'password' => 'required|confirmed|min:6',
-    //     ]);
-    // }
-
-    /**
-     * Create a new user instance after a valid registration.
-     *
-     * @param  array  $data
-     * @return User
-     */
-    protected function create(array $data)
+    private function generateToken($username)
     {
-        return User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => bcrypt($data['password']),
-        ]);
+        $secretKey = env('JWT_SECRET'); // Ganti dengan secret key yang sebenarnya
+        $payload = [
+            'username' => $username,
+            'exp' => time() + (30 * 24 * 60 * 60) // 30 hari * 24 jam * 60 menit * 60 detik (satu bulan)
+            // ...Tambahkan data tambahan yang ingin dimasukkan ke dalam token JWT
+        ];
+        return JWT::encode($payload, $secretKey, 'HS256');
     }
 }
