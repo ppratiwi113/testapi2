@@ -20,11 +20,15 @@
             <div class="content">
                 <span class="content-value">{{ $jumlahDosen[0]->total_dosen_tahun_ini }}</span>
                 <p class="content-percentage">
-                    <span>{{ $jumlahDosen[0]->peningkatan_dari_tahun_lalu > 0 ? '+' : '-' }}{{ $jumlahDosen[0]->peningkatan_dari_tahun_lalu }}</span>
-                    dari tahun
-                    lalu
+                    {{ $jumlahDosen[0]->peningkatan_dari_tahun_lalu > 0 ? '+' : '-' }}{{ $jumlahDosen[0]->peningkatan_dari_tahun_lalu }}
                 </p>
+                <p class="content-description">dari tahun lalu</p>
             </div>
+        </div>
+        <div>
+            {{ $statPegawai[1]->status_pegawai }} <br> {{ $statPegawai[1]->value }} <br>
+            {{ $statPegawai[0]->status_pegawai }} <br> {{ $statPegawai[0]->value }} <br>
+
         </div>
     </div>
 </body>

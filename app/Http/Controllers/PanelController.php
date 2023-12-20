@@ -24,11 +24,12 @@ class PanelController extends Controller
     public function getJumlahDosen()
     {
         $model = new ApiDashboard();
-        $result = $model->getJumlahDosen();
+        $jumlahdosen = $model->getJumlahDosen();
+        $statpegawai = $model->getStatKepegawaianDosen();
         // dd($result)
 
 
-        return view('jumlah-dosen', ['jumlahDosen' => $result]);
+        return view('jumlah-dosen', ['jumlahDosen' => $jumlahdosen, 'statPegawai' => $statpegawai]);
     }
     public function getJumlahTendik()
     {
